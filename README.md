@@ -78,3 +78,5 @@ Note: Ternary Relationships do not support Aggregation or Composition, which may
 
 To write a one-line comment, use "//" before your text
 For multi-line comments use "/\*" to start and "\*/" to terminate
+
+Test commit by Blaz.
