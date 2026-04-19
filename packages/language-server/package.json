@@ -19,7 +19,8 @@
         "@types/node": "^18.0.0",
         "langium-cli": "^4.2.0",
         "rimraf": "^5.0.0",
-        "typescript": "^5.7.3"
+        "typescript": "^5.7.3",
+        "vitest": "^2.1.0"
     },
     "scripts": {
         "prepare": "yarn run clean && yarn run langium:generate && yarn run build",
@@ -27,6 +28,8 @@
         "build": "tsc --noEmit",
         "watch": "tsc --noEmit --watch",
         "langium:generate": "langium generate",
-        "langium:watch": "langium generate --watch"
+        "langium:watch": "langium generate --watch",
+        "test": "vitest run",
+        "test:watch": "vitest"
     }
 }

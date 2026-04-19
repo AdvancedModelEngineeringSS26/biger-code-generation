@@ -1,0 +1,8 @@
+erdiagram Model
+
+entity A {
+    id: INT key
+    name: VARCHAR(80)
+    birthday: DATETIME
+    age: INT derived
+}
