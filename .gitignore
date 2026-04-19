@@ -12,3 +12,6 @@ yarn.lock
 # build files
 out
 pack
+
+# generated SQL outputs from examples/
+examples/*.sql
