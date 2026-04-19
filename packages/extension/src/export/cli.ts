@@ -1,9 +1,11 @@
 import type { ExportModelParams } from '@biger/common';
 import { Command } from 'commander';
+import { NodeFileSystem } from 'langium/node';
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { EntityRelationshipLanguageMetaData } from '../../../language-server/src/generated/module.js';
+import { createEntityRelationshipServices } from '../../../language-server/src/entity-relationship-module.js';
 import { createDefaultExportService } from '../../../language-server/src/export/export-service.js';
 
 interface SqlExportCommandOptions {
@@ -41,7 +43,8 @@ async function exportSql(file: string, options: SqlExportCommandOptions): Promis
     await assertFileExists(sourcePath);
 
     const sourceContent = await fs.readFile(sourcePath, 'utf-8');
-    const exportService = createDefaultExportService();
+    const { EntityRelationship } = createEntityRelationshipServices({ ...NodeFileSystem });
+    const exportService = createDefaultExportService(EntityRelationship);
     const params: ExportModelParams = {
         sourceUri: pathToFileURL(sourcePath).toString(),
         erContent: sourceContent,

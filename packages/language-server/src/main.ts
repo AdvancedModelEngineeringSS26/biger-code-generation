@@ -7,10 +7,12 @@ import { registerExportRequestHandler } from './export/export-request-handler.js
 
 // create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
-registerExportRequestHandler(connection);
 
 // inject the language services
 const { shared, EntityRelationship } = createEntityRelationshipServices({ connection, ...NodeFileSystem });
+
+// register export handler (needs services)
+registerExportRequestHandler(connection, EntityRelationship);
 
 // start the language server with the language-specific service
 startLanguageServer(shared);
