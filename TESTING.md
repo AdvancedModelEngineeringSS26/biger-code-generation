@@ -14,7 +14,7 @@ Vitest + hand-authored `.sql` specs. The exporter must conform to the spec (TDD-
 1. Drop `<name>.er` and one `<name>.<dialect>.sql` for **every** dialect in `SQL_DIALECTS` (`packages/common/src/export/protocol.ts`). Duplicate content across dialects if identical today — they will diverge as the exporter learns dialect-specific syntax. Note: stem names must not contain `.`.
 2. `yarn test`. New cases appear under each `SqlExporter > <dialect>` group. No code changes.
 
-Missing any (fixture, dialect) pair fails the coverage check with the exact missing files listed. Adding a dialect to `SUPPORTED_DIALECTS` immediately demands a `.<dialect>.sql` for every existing fixture — the suite stays red until you write them.
+Missing any (fixture, dialect) pair fails the coverage check with the exact missing files listed. Adding a dialect to `SQL_DIALECTS` immediately demands a `.<dialect>.sql` for every existing fixture — the suite stays red until you write them.
 
 ## TDD flow
 
