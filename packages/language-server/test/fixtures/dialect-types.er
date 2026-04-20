@@ -1,0 +1,9 @@
+erdiagram Model
+
+entity A {
+    id: INT key
+    score: DOUBLE
+    photo: BLOB
+    bio: CLOB
+    active: BOOLEAN
+}
