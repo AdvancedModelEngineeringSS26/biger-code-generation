@@ -1,6 +1,6 @@
-# Interim 1 — T2: Code Generation (ER → SQL)
+# Interim 1: Code Generation (ER → SQL)
 
-**Blaž Bone · Tilen Ožbot** — 2026-04-21 — ~8 min talk + ~2 min demo
+**Blaž Bone · Tilen Ožbot** — 2026-04-21
 
 ---
 
