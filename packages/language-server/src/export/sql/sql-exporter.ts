@@ -1,7 +1,7 @@
-import type { ExportModelParams, SqlExportOptions } from '@biger/common';
+import type { ExportModelParams } from '@biger/common';
 import { URI } from 'langium';
 import type { EntityRelationshipServices } from '../../entity-relationship-module.js';
-import type { Model } from '../../generated/ast.js';
+import type { Attribute, DataType, Entity, Model, Relationship } from '../../generated/ast.js';
 import type { Exporter } from '../export-service.js';
 
 export class SqlExporter implements Exporter {
@@ -11,11 +11,9 @@ export class SqlExporter implements Exporter {
     constructor(private readonly services: EntityRelationshipServices) {}
 
     async exportModel(params: ExportModelParams): Promise<string> {
-        const options = params.targetOptions as SqlExportOptions | undefined;
-        const dialect = options?.dialect ?? 'generic';
-
+        // Dialect currently unused: postgres/mysql fixtures are identical. Will branch when fixtures diverge.
         const model = await this.parseToModel(params.erContent, params.sourceUri);
-        return this.emitScaffold(model, dialect);
+        return this.emitDdl(model);
     }
 
     private async parseToModel(erContent: string, sourceUri: string): Promise<Model> {
@@ -39,24 +37,73 @@ export class SqlExporter implements Exporter {
         return document.parseResult.value;
     }
 
-    private emitScaffold(model: Model, dialect: string): string {
-        const lines: string[] = [];
-        lines.push('-- biger SQL export (scaffold, step 1)');
-        lines.push(`-- Model: ${model.name}`);
-        lines.push(`-- Dialect: ${dialect}`);
-        lines.push(`-- Entities: ${model.entities.length}`);
-        lines.push(`-- Relationships: ${model.relationships.length}`);
-        lines.push('');
-        for (const e of model.entities) {
-            const weakFlag = e.weak ? ' [weak]' : '';
-            lines.push(`-- Entity: ${e.name}${weakFlag} (attributes: ${e.attributes.length})`);
+    private emitDdl(model: Model): string {
+        const parts: string[] = [];
+        for (const entity of model.entities) {
+            parts.push(this.emitEntity(entity));
         }
-        if (model.relationships.length > 0) lines.push('');
-        for (const r of model.relationships) {
-            const weakFlag = r.weak ? ' [weak]' : '';
-            const src = r.source.entity.ref?.name ?? '?';
-            lines.push(`-- Relationship: ${r.name}${weakFlag} (source: ${src}, targets: ${r.targets.length})`);
+        for (const relationship of model.relationships) {
+            parts.push(this.emitRelationship(relationship));
         }
-        return lines.join('\n') + '\n';
+        return parts.join('');
+    }
+
+    private emitEntity(entity: Entity): string {
+        const columns = this.nonDerivedAttrs(entity.attributes).map((a) => this.renderAttribute(a));
+        const keys = this.keyAttrs(entity);
+        return this.renderTable(entity.name, columns, keys.map((k) => k.name));
+    }
+
+    private emitRelationship(rel: Relationship): string {
+        const participants: Entity[] = [];
+        const sourceEntity = rel.source.entity.ref;
+        if (sourceEntity) participants.push(sourceEntity);
+        for (const target of rel.targets) {
+            const targetEntity = target.relationEntity.entity.ref;
+            if (targetEntity) participants.push(targetEntity);
+        }
+
+        const pkColumnLines: string[] = [];
+        const pkColumnNames: string[] = [];
+        for (const entity of participants) {
+            for (const keyAttr of this.keyAttrs(entity)) {
+                pkColumnLines.push(
+                    `${keyAttr.name} ${this.renderDatatype(keyAttr.datatype)} references ${entity.name}(${keyAttr.name})`
+                );
+                pkColumnNames.push(keyAttr.name);
+            }
+        }
+
+        const relAttrLines = this.nonDerivedAttrs(rel.attributes).map((a) => this.renderAttribute(a));
+        const columns = [...pkColumnLines, ...relAttrLines];
+
+        return this.renderTable(rel.name, columns, pkColumnNames);
+    }
+
+    private renderTable(name: string, columnLines: string[], pkColumnNames: string[]): string {
+        const body = columnLines.map((c) => `    ${c}`);
+        if (pkColumnNames.length > 0) {
+            body.push(`    PRIMARY KEY (${pkColumnNames.join(', ')})`);
+        }
+        return `CREATE TABLE ${name}(\n${body.join(',\n')}\n);\n`;
+    }
+
+    private renderAttribute(attr: Attribute): string {
+        return `${attr.name} ${this.renderDatatype(attr.datatype)}`;
+    }
+
+    private renderDatatype(dt: DataType | undefined): string {
+        if (!dt) return '';
+        if (dt.size && dt.d) return `${dt.type}(${dt.size}, ${dt.d})`;
+        if (dt.size) return `${dt.type}(${dt.size})`;
+        return dt.type;
+    }
+
+    private nonDerivedAttrs(attrs: Attribute[]): Attribute[] {
+        return attrs.filter((a) => !a.type?.DERIVED);
+    }
+
+    private keyAttrs(entity: Entity): Attribute[] {
+        return entity.attributes.filter((a) => a.type?.KEY);
     }
 }

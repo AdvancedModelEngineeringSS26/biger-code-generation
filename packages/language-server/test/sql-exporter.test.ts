@@ -3,8 +3,13 @@ import { readdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as path from 'node:path';
+import { NodeFileSystem } from 'langium/node';
 import { SQL_DIALECTS, type SqlDialect } from '@biger/common';
+import { createEntityRelationshipServices } from '../src/entity-relationship-module.js';
 import { createDefaultExportService } from '../src/export/export-service.js';
+
+const { EntityRelationship } = createEntityRelationshipServices({ ...NodeFileSystem });
+const exportService = createDefaultExportService(EntityRelationship);
 
 // Filename convention: <stem>.<dialect>.sql. Stems must not contain '.'.
 const fixturesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
@@ -65,7 +70,7 @@ for (const dialect of SQL_DIALECTS) {
                 readFile(sqlPath, 'utf-8')
             ]);
 
-            const result = await createDefaultExportService().exportModel({
+            const result = await exportService.exportModel({
                 sourceUri: pathToFileURL(erPath).toString(),
                 erContent,
                 target: 'sql',
