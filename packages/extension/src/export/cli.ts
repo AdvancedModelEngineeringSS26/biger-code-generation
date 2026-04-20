@@ -29,7 +29,7 @@ export async function runExportCli(argv: string[]): Promise<void> {
             `Source ER file (${EntityRelationshipLanguageMetaData.fileExtensions.join(', ')})`
         )
         .option('-d, --destination <path>', 'Destination directory or target SQL file path')
-        .option('--dialect <dialect>', 'SQL dialect (e.g. generic, postgres, mysql)', 'generic')
+        .option('--dialect <dialect>', 'SQL dialect (postgres, mysql)', 'postgres')
         .action(async (file: string, options: SqlExportCommandOptions) => {
             await exportSql(file, options);
         });

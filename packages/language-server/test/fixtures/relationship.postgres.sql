@@ -9,6 +9,6 @@ CREATE TABLE B(
 CREATE TABLE Rel(
     id1 int references A(id1),
     id2 int references B(id2),
-    attr string,
+    attr VARCHAR,
     PRIMARY KEY (id1, id2)
 );
