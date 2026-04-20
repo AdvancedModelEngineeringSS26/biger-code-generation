@@ -5,5 +5,5 @@ entity A {
     score: DOUBLE
     photo: BLOB
     bio: CLOB
-    active: BOOLEAN
+    is_active: BOOLEAN
 }
