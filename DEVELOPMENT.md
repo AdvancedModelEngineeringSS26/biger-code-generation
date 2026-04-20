@@ -41,6 +41,10 @@ Diagram Generation is done in [diagram-generator.ts](./language-server/src/diagr
 ## Known Issues
 URI serialization on windows is currently mismatched with langium, causing automatic text-diagram-synchronization to break. This is currently resolved through overriding the function 'createDiagramIdentifier' in 'packages/extension/src/webview-panel-manager.ts'
 
+## Testing
+
+See [TESTING.md](./TESTING.md) for layout, the TDD flow, conventions, and CI behavior.
+
 ## Pull Request
 
 First, make sure your repository is up-to-date by pulling the latest changes from the `master` branch:

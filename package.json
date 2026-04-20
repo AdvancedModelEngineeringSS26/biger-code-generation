@@ -11,7 +11,8 @@
         "build:common": "yarn --cwd packages/common",
         "build:extension": "yarn --cwd packages/extension",
         "build:language-server": "yarn --cwd packages/language-server",
-        "build:webview": "yarn --cwd packages/webview"
+        "build:webview": "yarn --cwd packages/webview",
+        "test": "yarn --cwd packages/language-server test && yarn --cwd packages/extension test"
     },
     "dependencies": {
         "react": "^19.1.0",

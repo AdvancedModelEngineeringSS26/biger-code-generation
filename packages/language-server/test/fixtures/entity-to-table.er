@@ -1,0 +1,5 @@
+erdiagram Model
+
+entity A {
+    id: INT key
+}

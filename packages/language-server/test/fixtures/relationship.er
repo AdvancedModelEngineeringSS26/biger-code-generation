@@ -1,0 +1,8 @@
+erdiagram Model
+
+entity A { id1: int key }
+entity B { id2: int key }
+relationship Rel {
+    A -> B
+    attr: string
+}

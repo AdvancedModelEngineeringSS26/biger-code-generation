@@ -14,7 +14,9 @@
         "clean": "rimraf pack",
         "build": "node esbuild.mjs",
         "watch": "node esbuild.mjs --watch",
-        "export:cli": "node ./pack/extension/src/export-cli.cjs"
+        "export:cli": "node ./pack/extension/src/export-cli.cjs",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@biger/common": "*",
@@ -26,6 +28,7 @@
         "esbuild": "^0.25.0",
         "rimraf": "^5.0.0",
         "sprotty-vscode": "^1.0.0",
+        "vitest": "^2.1.0",
         "vscode-languageclient": "^9.0.1"
     },
     "engines": {

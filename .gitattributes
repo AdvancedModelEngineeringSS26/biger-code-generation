@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+*.er  text eol=lf
+*.sql text eol=lf
