@@ -4,24 +4,7 @@
 
 ---
 
-## 1 · Title
-
-- T2: Code Generation — ER Database Schemas
-- Langium-based bigER
-- Blaž Bone & Tilen Ožbot
-
----
-
-## 2 · Context
-
-- bigER: hybrid ER tool for VS Code, 17,500+ installs
-- Original: Xtext / Java
-- Being reimplemented in **Langium / TypeScript**
-- Our slice: ER → SQL DDL, configurable, dialect-aware
-
----
-
-## 3 · Goals
+## Slide 1 · Goals
 
 - ER → SQL DDL (tables, PK, FK, indexes)
 - Postgres + MySQL dialects
@@ -32,7 +15,7 @@
 
 ---
 
-## 4 · Research
+## Slide 2 · Research
 
 - bigER's Java `SqlGenerator` + per-dialect `mapDataType`
 - Langium AST lifecycle — must use `DocumentBuilder` for `.ref` to resolve
@@ -42,7 +25,7 @@
 
 ---
 
-## 5 · Status — Done ✓
+## Slide 3 · Status — Done ✓
 
 - `.er` → AST → DDL → file works end-to-end
 - Entity → `CREATE TABLE` + PK
@@ -53,7 +36,7 @@
 
 ---
 
-## 6 · Architecture
+## Slide 4 · Architecture
 
 ```
 CLI / VS Code / LSP
@@ -73,7 +56,7 @@ CLI / VS Code / LSP
 
 ---
 
-## 7 · Dialect divergence — live example
+## Slide 5 · Dialect divergence — live example
 
 ```
 score: DOUBLE   photo: BLOB   bio: CLOB
@@ -89,7 +72,7 @@ Covered by `dialect-types` fixture, all 3 test stages.
 
 ---
 
-## 8 · Testing
+## Slide 6 · Testing
 
 - Vitest, **23 green** across Ubuntu / macOS / Windows, Node 22
 - Golden files auto-discovered per dialect
@@ -100,7 +83,7 @@ Covered by `dialect-types` fixture, all 3 test stages.
 
 ---
 
-## 9 · Demo (~2 min)
+## Slide 7 · Demo
 
 1. `examples/test.er` in VS Code → `Export SQL` command
 2. CLI: `--dialect postgres` vs `--dialect mysql`
@@ -109,7 +92,7 @@ Covered by `dialect-types` fixture, all 3 test stages.
 
 ---
 
-## 10 · Planned — Interim 2
+## Slide 8 · Planned — Interim 2
 
 - Explicit `FOREIGN KEY … ON DELETE/UPDATE`
 - Naming strategy (snake_case, prefixes)
@@ -121,33 +104,10 @@ Covered by `dialect-types` fixture, all 3 test stages.
 
 ---
 
-## 11 · Blockers — feedback please
+## Slide 9 · Blockers — feedback please
 
 1. **Cardinality-blind vs -aware** — match bigER or diverge?
 2. **Where does config live** — CLI flag / `.er` directive / sidecar?
 3. **Dialect abstraction** — scale strategy objects or switch to emitter subclass?
-4. **bigER bugs** (e.g. MySQL `CLOB`) — stay faithful or fix?
+4. **bigER bugs** (e.g. MySQL `CLOB`) — stay faithful or fix? (we fixed for now)
 5. **Composition / aggregation → SQL** — FK + warning OK?
-
----
-
-## 12 · Next Steps
-
-1. Explicit FK emission
-2. Config schema
-3. Cardinality decision (post-meeting)
-4. Naming strategy + validation
-5. Inheritance, weak, multivalued
-6. Fixture expansion (+ negative)
-7. `docs/mapping-rules.md`
-
-Split: Tilen = emitter core · Blaž = tests / config / docs
-
----
-
-## Appendix — Commits (last 3 days)
-
-- PR #1 Tilen — v0 exporter (parse + scaffold → real DDL)
-- PR #2 Blaž — Vitest infra + fixtures + CI
-- PR #3 Tilen — postgres + mysql dialect + `DdlEmitter`
-- PR #4 Blaž — 3-stage validation (grammar + engine)
