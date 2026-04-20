@@ -3,6 +3,6 @@ CREATE TABLE A(
     score DOUBLE PRECISION,
     photo BYTEA,
     bio TEXT,
-    active BOOLEAN,
+    is_active BOOLEAN,
     PRIMARY KEY (id)
 );
