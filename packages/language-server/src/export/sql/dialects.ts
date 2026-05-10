@@ -1,7 +1,7 @@
-import type { SqlDialect } from '@biger/common';
+import type { SqlGenerationDialect } from '@biger/common';
 
 export interface Dialect {
-    readonly name: SqlDialect;
+    readonly name: SqlGenerationDialect;
     mapDataType(type: string): string;
 }
 
@@ -211,7 +211,13 @@ export const mysqlDialect: Dialect = {
     }),
 };
 
-export const DIALECTS: Record<SqlDialect, Dialect> = {
+export const genericDialect: Dialect = {
+    name: 'generic',
+    mapDataType: (type) => type,
+};
+
+export const DIALECTS: Record<SqlGenerationDialect, Dialect> = {
+    generic: genericDialect,
     postgres: postgresDialect,
     mysql: mysqlDialect,
 };

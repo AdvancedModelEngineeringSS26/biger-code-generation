@@ -1,4 +1,4 @@
-import type { ExportModelParams, SqlDialect, SqlExportOptions } from '@biger/common';
+import type { ExportModelParams, SqlExportOptions, SqlGenerationDialect } from '@biger/common';
 import { URI } from 'langium';
 import type { EntityRelationshipServices } from '../../entity-relationship-module.js';
 import type { Model } from '../../generated/ast.js';
@@ -14,7 +14,8 @@ export class SqlExporter implements Exporter {
 
     async exportModel(params: ExportModelParams): Promise<string> {
         const opts = params.targetOptions as SqlExportOptions | undefined;
-        const dialectName: SqlDialect = opts?.dialect ?? 'postgres';
+        // `opts` carries additional generation flags (for example `generateDrop`).
+        const dialectName: SqlGenerationDialect = opts?.dialect ?? 'generic';
         const dialect = DIALECTS[dialectName];
         if (!dialect) {
             throw new Error(`Unknown SQL dialect: ${dialectName}`);

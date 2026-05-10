@@ -7,9 +7,12 @@ export type ExportTarget = 'sql' | (string & {});
 // `<fixture>.<dialect>.sql` (enforced by sql-exporter.test.ts coverage check).
 export const SQL_DIALECTS = ['postgres', 'mysql'] as const;
 export type SqlDialect = (typeof SQL_DIALECTS)[number];
+export const SQL_GENERATION_DIALECTS = ['generic', ...SQL_DIALECTS] as const;
+export type SqlGenerationDialect = (typeof SQL_GENERATION_DIALECTS)[number];
 
 export interface SqlExportOptions {
-    dialect?: SqlDialect;
+    dialect?: SqlGenerationDialect;
+    generateDrop?: boolean;
 }
 
 export interface ExportModelParams {

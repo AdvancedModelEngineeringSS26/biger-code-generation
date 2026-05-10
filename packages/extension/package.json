@@ -89,11 +89,37 @@
                 "category": "ER Diagram"
             },
             {
-                "command": "biger.export.sql",
-                "title": "Export SQL",
-                "category": "ER Export"
+                "command": "biger.generate.sql.generic",
+                "title": "Generate SQL",
+                "category": "bigER"
+            },
+            {
+                "command": "biger.generate.postgres",
+                "title": "Generate PostgreSQL",
+                "category": "bigER"
+            },
+            {
+                "command": "biger.generate.mysql",
+                "title": "Generate MySQL",
+                "category": "bigER"
             }
         ],
+        "submenus": [
+            {
+                "id": "biger.generate",
+                "label": "Generate SQL"
+            }
+        ],
+        "configuration": {
+            "title": "bigER",
+            "properties": {
+                "biger.generateDrop": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Generate a file with DROP TABLE statements when generating SQL."
+                }
+            }
+        },
         "menus": {
             "commandPalette": [
                 {
@@ -117,7 +143,15 @@
                     "when": "er-diagram-focused"
                 },
                 {
-                    "command": "biger.export.sql",
+                    "command": "biger.generate.sql.generic",
+                    "when": "editorLangId == 'entity-relationship'"
+                },
+                {
+                    "command": "biger.generate.postgres",
+                    "when": "editorLangId == 'entity-relationship'"
+                },
+                {
+                    "command": "biger.generate.mysql",
                     "when": "editorLangId == 'entity-relationship'"
                 }
             ],
@@ -128,9 +162,9 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "biger.export.sql",
+                    "submenu": "biger.generate",
                     "when": "editorLangId == 'entity-relationship'",
-                    "group": "navigation"
+                    "group": "2_workspace"
                 }
             ],
             "editor/title": [
@@ -138,18 +172,32 @@
                     "command": "biger.diagram.open",
                     "when": "editorLangId == 'entity-relationship'",
                     "group": "navigation"
+                }
+            ],
+            "biger.generate": [
+                {
+                    "command": "biger.generate.sql.generic",
+                    "group": "1_generate@1"
                 },
                 {
-                    "command": "biger.export.sql",
-                    "when": "editorLangId == 'entity-relationship'",
-                    "group": "navigation"
+                    "command": "biger.generate.postgres",
+                    "group": "1_generate@2"
+                },
+                {
+                    "command": "biger.generate.mysql",
+                    "group": "1_generate@3"
                 }
             ],
             "explorer/context": [
                 {
                     "command": "biger.diagram.open",
-                    "when": "resourceExtname == '.er'",
+                    "when": "resourceExtname == '.er' || resourceExtname == '.erd'",
                     "group": "navigation"
+                },
+                {
+                    "submenu": "biger.generate",
+                    "when": "resourceExtname == '.er' || resourceExtname == '.erd'",
+                    "group": "2_workspace"
                 }
             ]
         },
