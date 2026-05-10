@@ -78,6 +78,32 @@ const { EntityRelationship } = createEntityRelationshipServices({ ...NodeFileSys
 const exportService = createDefaultExportService(EntityRelationship);
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Pre-probe engine drivers
+// ──────────────────────────────────────────────────────────────────────────────
+// Each driver's init() runs once at module load. Successful drivers are stored
+// and reused across all Stage 3 tests for that dialect. Failed init (e.g. MySQL
+// when Docker is unavailable) leaves the dialect absent from the map, and its
+// `describe` block is skipped at definition time via `describe.skipIf`.
+//
+// This shape avoids the cost of init+close in a separate probe and again in
+// beforeAll — particularly important for MySQL where each container start is
+// several seconds.
+
+const engineDrivers = new Map<SqlDialect, SqlEngineDriver>();
+for (const dialect of SQL_DIALECTS) {
+    const factory = SQL_ENGINES[dialect];
+    if (!factory) continue;
+    try {
+        const driver = factory();
+        await driver.init();
+        engineDrivers.set(dialect, driver);
+    } catch (err) {
+        const reason = err instanceof Error ? err.message : String(err);
+        console.warn(`[engine ${dialect}] init failed — Stage 3 will skip:\n  ${reason}`);
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Stage 0 — fixture coverage
 // ──────────────────────────────────────────────────────────────────────────────
 // Every .er must ship a .sql for every supported dialect.
@@ -170,23 +196,15 @@ describe('SqlExporter > 2. exporter output', () => {
 // errors the parser misses: unknown types, bad FK targets, reserved-word
 // collisions, etc.
 //
-// Drivers come from SQL_ENGINES (test/support/engines). A dialect without a
-// registered driver simply has no Stage 3 — its describe block is skipped at
-// definition time, no failures.
+// Drivers come from SQL_ENGINES (test/support/engines), pre-probed above.
+// A dialect missing from `engineDrivers` (no factory, or init failed) skips
+// its describe block via `describe.skipIf` — no hard failures.
 
 describe('SqlExporter > 3. engine', () => {
     for (const dialect of SQL_DIALECTS) {
-        const factory = SQL_ENGINES[dialect];
-        if (!factory) continue;
+        const driver = engineDrivers.get(dialect);
 
-        describe(dialect, () => {
-            let driver: SqlEngineDriver;
-
-            beforeAll(async () => {
-                driver = factory();
-                await driver.init();
-            }, 30_000);
-
+        describe.skipIf(!driver)(dialect, () => {
             afterAll(async () => {
                 if (driver) await driver.close();
             });
@@ -201,7 +219,7 @@ describe('SqlExporter > 3. engine', () => {
                 it.skipIf(!ok)(`executes ${stem}.${dialect}.sql`, async () => {
                     const { sqlPath } = fixturePair(stem, dialect);
                     const sql = await readFile(sqlPath, 'utf-8');
-                    await driver.load(sql);
+                    await driver!.load(sql);
                 });
             }
         });
