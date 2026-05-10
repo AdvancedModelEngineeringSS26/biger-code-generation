@@ -1,4 +1,3 @@
-import { PGlite } from '@electric-sql/pglite';
 import { SQL_DIALECTS, type SqlDialect } from '@biger/common';
 import { readdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -8,6 +7,7 @@ import { NodeFileSystem } from 'langium/node';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createEntityRelationshipServices } from '../src/entity-relationship-module.js';
 import { createDefaultExportService } from '../src/export/export-service.js';
+import { SQL_ENGINES, type SqlEngineDriver } from './support/engines/index.js';
 import { validateGrammar, type ValidityResult } from './support/sql-validity.js';
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -166,37 +166,44 @@ describe('SqlExporter > 2. exporter output', () => {
 // ──────────────────────────────────────────────────────────────────────────────
 // Stage 3 — engine (real database)
 // ──────────────────────────────────────────────────────────────────────────────
-// Run each golden through a real Postgres engine (PGlite, WASM, no Docker).
-// Catches semantic errors the parser misses: unknown types, bad FK targets,
-// reserved-word collisions, etc.
+// Run each golden through a real engine for its dialect. Catches semantic
+// errors the parser misses: unknown types, bad FK targets, reserved-word
+// collisions, etc.
 //
-// MySQL: no pure-Node MySQL engine exists. Covering MySQL semantics would need
-// Testcontainers + Docker, which would break our cross-OS CI matrix. Deferred.
+// Drivers come from SQL_ENGINES (test/support/engines). A dialect without a
+// registered driver simply has no Stage 3 — its describe block is skipped at
+// definition time, no failures.
 
 describe('SqlExporter > 3. engine', () => {
-    describe('postgres', () => {
-        let db: PGlite;
+    for (const dialect of SQL_DIALECTS) {
+        const factory = SQL_ENGINES[dialect];
+        if (!factory) continue;
 
-        beforeAll(async () => {
-            db = await PGlite.create();
-        }, 30_000);
+        describe(dialect, () => {
+            let driver: SqlEngineDriver;
 
-        afterAll(async () => {
-            if (db) await db.close();
-        });
+            beforeAll(async () => {
+                driver = factory();
+                await driver.init();
+            }, 30_000);
 
-        beforeEach(async () => {
-            // Reset between tests — each fixture runs against a clean schema.
-            await db.exec('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;');
-        });
-
-        for (const stem of stemsFor('postgres')) {
-            const ok = grammarOk(stem, 'postgres');
-            it.skipIf(!ok)(`executes ${stem}.postgres.sql`, async () => {
-                const { sqlPath } = fixturePair(stem, 'postgres');
-                const sql = await readFile(sqlPath, 'utf-8');
-                await db.exec(sql);
+            afterAll(async () => {
+                if (driver) await driver.close();
             });
-        }
-    });
+
+            beforeEach(async () => {
+                // Reset between tests — each fixture runs against a clean schema.
+                if (driver) await driver.reset();
+            });
+
+            for (const stem of stemsFor(dialect)) {
+                const ok = grammarOk(stem, dialect);
+                it.skipIf(!ok)(`executes ${stem}.${dialect}.sql`, async () => {
+                    const { sqlPath } = fixturePair(stem, dialect);
+                    const sql = await readFile(sqlPath, 'utf-8');
+                    await driver.load(sql);
+                });
+            }
+        });
+    }
 });
