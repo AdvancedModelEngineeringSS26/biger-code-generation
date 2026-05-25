@@ -1,0 +1,17 @@
+{
+  "tables": {
+    "a": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    }
+  }
+}

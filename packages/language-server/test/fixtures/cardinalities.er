@@ -1,0 +1,23 @@
+erdiagram Cardinalities
+notation = chen
+
+entity Author {
+    authId: INT key
+    name: VARCHAR(100)
+}
+
+entity Book {
+    isbn: VARCHAR(13) key
+}
+
+entity Tag {
+    tagName: VARCHAR(50) key
+}
+
+relationship Wrote {
+    Author[1] -> Book[N]
+}
+
+relationship Tagged {
+    Book[N] -> Tag[N]
+}

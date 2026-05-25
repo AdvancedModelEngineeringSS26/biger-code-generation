@@ -20,6 +20,7 @@
         "@testcontainers/mysql": "^10.16.0",
         "@types/node": "^18.0.0",
         "dt-sql-parser": "^4.0.0",
+        "fast-check": "^3.23.0",
         "langium-cli": "^4.2.0",
         "libpg-query": "^17.0.0",
         "mysql2": "^3.11.0",

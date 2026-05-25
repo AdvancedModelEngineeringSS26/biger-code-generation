@@ -1,0 +1,51 @@
+{
+  "tables": {
+    "Person": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    },
+    "Person_phoneNumber": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "phoneNumber",
+          "type": "varchar(20)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id",
+        "phoneNumber"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "id"
+          ],
+          "referencedTable": "Person",
+          "referencedColumns": [
+            "id"
+          ]
+        }
+      ]
+    }
+  }
+}

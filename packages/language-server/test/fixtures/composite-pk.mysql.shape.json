@@ -1,0 +1,28 @@
+{
+  "tables": {
+    "Booking": {
+      "columns": [
+        {
+          "name": "flightId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "seatNumber",
+          "type": "varchar(4)",
+          "nullable": false
+        },
+        {
+          "name": "passengerName",
+          "type": "varchar(100)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "flightId",
+        "seatNumber"
+      ],
+      "foreignKeys": []
+    }
+  }
+}

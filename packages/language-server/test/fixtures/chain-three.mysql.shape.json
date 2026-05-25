@@ -1,0 +1,134 @@
+{
+  "tables": {
+    "Author": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    },
+    "Book": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "varchar(200)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "isbn"
+      ],
+      "foreignKeys": []
+    },
+    "Chapter": {
+      "columns": [
+        {
+          "name": "chapterNumber",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "heading",
+          "type": "varchar(200)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "chapterNumber"
+      ],
+      "foreignKeys": []
+    },
+    "Contains": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        },
+        {
+          "name": "chapterNumber",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn",
+        "chapterNumber"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "chapterNumber"
+          ],
+          "referencedTable": "Chapter",
+          "referencedColumns": [
+            "chapterNumber"
+          ]
+        },
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "Book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        }
+      ]
+    },
+    "Wrote": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id",
+        "isbn"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "id"
+          ],
+          "referencedTable": "Author",
+          "referencedColumns": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "Book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        }
+      ]
+    }
+  }
+}

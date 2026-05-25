@@ -1,0 +1,37 @@
+{
+  "tables": {
+    "A": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "score",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "photo",
+          "type": "blob",
+          "nullable": true
+        },
+        {
+          "name": "bio",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "is_active",
+          "type": "tinyint(1)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    }
+  }
+}

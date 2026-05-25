@@ -1,0 +1,60 @@
+{
+  "tables": {
+    "employee": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "character varying(100)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    },
+    "manages": {
+      "columns": [
+        {
+          "name": "manager_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "reports_id",
+          "type": "integer",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "manager_id",
+        "reports_id"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "manager_id"
+          ],
+          "referencedTable": "employee",
+          "referencedColumns": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "reports_id"
+          ],
+          "referencedTable": "employee",
+          "referencedColumns": [
+            "id"
+          ]
+        }
+      ]
+    }
+  }
+}

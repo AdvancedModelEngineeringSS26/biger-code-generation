@@ -1,0 +1,124 @@
+{
+  "tables": {
+    "Author": {
+      "columns": [
+        {
+          "name": "authId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "authId"
+      ],
+      "foreignKeys": []
+    },
+    "Book": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn"
+      ],
+      "foreignKeys": []
+    },
+    "Tag": {
+      "columns": [
+        {
+          "name": "tagName",
+          "type": "varchar(50)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "tagName"
+      ],
+      "foreignKeys": []
+    },
+    "Tagged": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        },
+        {
+          "name": "tagName",
+          "type": "varchar(50)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn",
+        "tagName"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "Book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        },
+        {
+          "columns": [
+            "tagName"
+          ],
+          "referencedTable": "Tag",
+          "referencedColumns": [
+            "tagName"
+          ]
+        }
+      ]
+    },
+    "Wrote": {
+      "columns": [
+        {
+          "name": "authId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "authId",
+        "isbn"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "authId"
+          ],
+          "referencedTable": "Author",
+          "referencedColumns": [
+            "authId"
+          ]
+        },
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "Book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        }
+      ]
+    }
+  }
+}

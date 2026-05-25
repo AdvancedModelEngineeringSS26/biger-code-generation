@@ -1,0 +1,11 @@
+erdiagram SelfRef
+notation = uml
+
+entity Employee {
+    id: INT key
+    name: VARCHAR(100)
+}
+
+relationship Manages {
+    Employee[1|"manager"] -> Employee[N|"reports"]
+}

@@ -14,7 +14,6 @@ export class SqlExporter implements Exporter {
 
     async exportModel(params: ExportModelParams): Promise<string> {
         const opts = params.targetOptions as SqlExportOptions | undefined;
-        // `opts` carries additional generation flags (for example `generateDrop`).
         const dialectName: SqlGenerationDialect = opts?.dialect ?? 'generic';
         const dialect = DIALECTS[dialectName];
         if (!dialect) {
@@ -22,7 +21,7 @@ export class SqlExporter implements Exporter {
         }
 
         const model = await this.parseToModel(params.erContent, params.sourceUri);
-        return new DdlEmitter(dialect).emit(model);
+        return new DdlEmitter(dialect).emit(model, opts);
     }
 
     private async parseToModel(erContent: string, sourceUri: string): Promise<Model> {

@@ -1,0 +1,73 @@
+{
+  "tables": {
+    "A": {
+      "columns": [
+        {
+          "name": "id1",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id1"
+      ],
+      "foreignKeys": []
+    },
+    "B": {
+      "columns": [
+        {
+          "name": "id2",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id2"
+      ],
+      "foreignKeys": []
+    },
+    "Rel": {
+      "columns": [
+        {
+          "name": "id1",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "id2",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "attr",
+          "type": "varchar(255)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "id1",
+        "id2"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "id1"
+          ],
+          "referencedTable": "A",
+          "referencedColumns": [
+            "id1"
+          ]
+        },
+        {
+          "columns": [
+            "id2"
+          ],
+          "referencedTable": "B",
+          "referencedColumns": [
+            "id2"
+          ]
+        }
+      ]
+    }
+  }
+}

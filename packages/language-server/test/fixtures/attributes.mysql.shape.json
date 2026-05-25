@@ -1,0 +1,27 @@
+{
+  "tables": {
+    "A": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(80)",
+          "nullable": true
+        },
+        {
+          "name": "birthday",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    }
+  }
+}

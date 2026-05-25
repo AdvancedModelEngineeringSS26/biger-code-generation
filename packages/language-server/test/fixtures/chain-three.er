@@ -1,0 +1,24 @@
+erdiagram Chain
+
+entity Author {
+    id: INT key
+    name: VARCHAR(100)
+}
+
+entity Book {
+    isbn: VARCHAR(13) key
+    title: VARCHAR(200)
+}
+
+entity Chapter {
+    chapterNumber: INT key
+    heading: VARCHAR(200)
+}
+
+relationship Wrote {
+    Author -> Book
+}
+
+relationship Contains {
+    Book -> Chapter
+}

@@ -1,0 +1,7 @@
+erdiagram Multivalued
+
+entity Person {
+    id: INT key
+    name: VARCHAR(100)
+    phoneNumber: VARCHAR(20) multivalued
+}

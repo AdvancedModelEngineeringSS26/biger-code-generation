@@ -1,0 +1,60 @@
+{
+  "tables": {
+    "Employee": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    },
+    "Manages": {
+      "columns": [
+        {
+          "name": "manager_id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "reports_id",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "manager_id",
+        "reports_id"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "manager_id"
+          ],
+          "referencedTable": "Employee",
+          "referencedColumns": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "reports_id"
+          ],
+          "referencedTable": "Employee",
+          "referencedColumns": [
+            "id"
+          ]
+        }
+      ]
+    }
+  }
+}

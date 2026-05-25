@@ -1,0 +1,124 @@
+{
+  "tables": {
+    "author": {
+      "columns": [
+        {
+          "name": "authid",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "character varying(100)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "authid"
+      ],
+      "foreignKeys": []
+    },
+    "book": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "character varying(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn"
+      ],
+      "foreignKeys": []
+    },
+    "tag": {
+      "columns": [
+        {
+          "name": "tagname",
+          "type": "character varying(50)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "tagname"
+      ],
+      "foreignKeys": []
+    },
+    "tagged": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "character varying(13)",
+          "nullable": false
+        },
+        {
+          "name": "tagname",
+          "type": "character varying(50)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn",
+        "tagname"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        },
+        {
+          "columns": [
+            "tagname"
+          ],
+          "referencedTable": "tag",
+          "referencedColumns": [
+            "tagname"
+          ]
+        }
+      ]
+    },
+    "wrote": {
+      "columns": [
+        {
+          "name": "authid",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "isbn",
+          "type": "character varying(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "authid",
+        "isbn"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "authid"
+          ],
+          "referencedTable": "author",
+          "referencedColumns": [
+            "authid"
+          ]
+        },
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        }
+      ]
+    }
+  }
+}

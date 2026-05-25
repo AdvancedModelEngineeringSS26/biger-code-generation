@@ -1,0 +1,124 @@
+{
+  "tables": {
+    "Book": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn"
+      ],
+      "foreignKeys": []
+    },
+    "HasMember": {
+      "columns": [
+        {
+          "name": "libId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "memberId",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "libId",
+        "memberId"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "libId"
+          ],
+          "referencedTable": "Library",
+          "referencedColumns": [
+            "libId"
+          ]
+        },
+        {
+          "columns": [
+            "memberId"
+          ],
+          "referencedTable": "Member",
+          "referencedColumns": [
+            "memberId"
+          ]
+        }
+      ]
+    },
+    "Library": {
+      "columns": [
+        {
+          "name": "libId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "libId"
+      ],
+      "foreignKeys": []
+    },
+    "Member": {
+      "columns": [
+        {
+          "name": "memberId",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "memberId"
+      ],
+      "foreignKeys": []
+    },
+    "Owns": {
+      "columns": [
+        {
+          "name": "libId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "libId",
+        "isbn"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "Book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        },
+        {
+          "columns": [
+            "libId"
+          ],
+          "referencedTable": "Library",
+          "referencedColumns": [
+            "libId"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+erdiagram WeakEntity
+
+entity Invoice {
+    invoiceId: INT key
+}
+
+weak entity InvoiceLine {
+    lineNumber: INT partial_key
+    description: VARCHAR(200)
+}
+
+weak relationship Contains {
+    Invoice -> InvoiceLine
+}

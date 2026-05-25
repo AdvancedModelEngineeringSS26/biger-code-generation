@@ -1,0 +1,50 @@
+{
+  "tables": {
+    "Employee": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "salary",
+          "type": "decimal(10,2)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "id"
+          ],
+          "referencedTable": "Person",
+          "referencedColumns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "Person": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "nullable": true
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    }
+  }
+}
