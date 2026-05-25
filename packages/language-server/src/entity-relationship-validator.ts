@@ -11,7 +11,7 @@ export function registerValidationChecks(services: EntityRelationshipServices) {
     const validator = services.validation.EntityRelationshipValidator;
     const checks: ValidationChecks<EntityRelationshipAstType> = {
         Model: [validator.checkModelName, validator.checkModelEntityNamesForDuplicates, validator.checkModelRelationshipNamesForDuplicates],
-        Entity: [validator.checkEntityOrRelationshipAttributes, validator.checkEntityStartsWithCapitalLetter,],
+        Entity: [validator.checkEntityOrRelationshipAttributes, validator.checkEntityStartsWithCapitalLetter, validator.checkEntityKeys],
         Relationship: [validator.checkEntityOrRelationshipAttributes, validator.checkRelationshipAggregationCompositionForNotations],
         RelationEntity: [validator.checkRelationEntityCardinalityForNotations],
         Attribute: [validator.checkAttributeVisibilityForUMLNotation]
@@ -126,7 +126,7 @@ export class EntityRelationshipValidator {
                 while (extendedEntity) {
                     let partialKeys = []
                     if(notation?.notationType?.UML != undefined) { //if uml is used don't consider private variables
-                        partialKeys = extendedEntity.attributes.filter(attr => attr.type?.KEY != attr.visibility?.PRIVATE == undefined)
+                        partialKeys = extendedEntity.attributes.filter(attr => attr.type?.KEY != undefined && attr.visibility?.PRIVATE == undefined)
                     }
                     else {
                         partialKeys = extendedEntity.attributes.filter(attr => attr.type?.KEY != undefined)

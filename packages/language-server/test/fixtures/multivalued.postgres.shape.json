@@ -1,0 +1,51 @@
+{
+  "tables": {
+    "person": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "character varying(100)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    },
+    "person_phonenumber": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "phonenumber",
+          "type": "character varying(20)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id",
+        "phonenumber"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "id"
+          ],
+          "referencedTable": "person",
+          "referencedColumns": [
+            "id"
+          ]
+        }
+      ]
+    }
+  }
+}

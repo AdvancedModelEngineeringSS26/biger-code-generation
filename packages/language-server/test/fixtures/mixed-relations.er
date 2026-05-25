@@ -1,0 +1,27 @@
+erdiagram MixedRelations
+notation = uml
+
+entity Library {
+    libId: INT key
+    name: VARCHAR(100)
+}
+
+entity Book {
+    isbn: VARCHAR(13) key
+}
+
+entity Page {
+    pageNumber: INT key
+}
+
+relationship Owns {
+    Library -> Book
+}
+
+relationship HasPage {
+    Book o- Page
+}
+
+relationship Stocks {
+    Library *- Page
+}

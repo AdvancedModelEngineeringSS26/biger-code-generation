@@ -1,0 +1,17 @@
+erdiagram Ternary
+
+entity Doctor {
+    docId: INT key
+}
+
+entity Patient {
+    patId: INT key
+}
+
+entity Hospital {
+    hospId: INT key
+}
+
+relationship Treats {
+    Doctor -> Patient -> Hospital
+}

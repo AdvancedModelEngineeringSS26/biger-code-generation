@@ -1,0 +1,22 @@
+erdiagram Star
+
+entity Library {
+    libId: INT key
+    name: VARCHAR(100)
+}
+
+entity Book {
+    isbn: VARCHAR(13) key
+}
+
+entity Member {
+    memberId: INT key
+}
+
+relationship Owns {
+    Library -> Book
+}
+
+relationship HasMember {
+    Library -> Member
+}

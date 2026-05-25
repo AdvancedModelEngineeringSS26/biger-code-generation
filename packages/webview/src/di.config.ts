@@ -42,7 +42,6 @@ const ERDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
 
     configureModelElement(context, GRAPH_TYPE, SGraphImpl, SGraphView);
     // Nodes
-    //configureModelElement(context, 'node', RectangularNode, RectangularNodeView);
     configureModelElement(context, 'node:entity', EntityNode, EntityNodeView, { enable: [expandFeature] });
     configureModelElement(context, 'node:relationship', RelationshipNode, RelationshipNodeView);
     
@@ -72,8 +71,6 @@ const ERDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     configureModelElement(context, 'label:partial-key', SLabelImpl, SLabelView, { enable: [editLabelFeature] });
     configureModelElement(context, 'label:derived', SLabelImpl, SLabelView, { enable: [editLabelFeature] });
 
-    //
-    //configureModelElement(context, 'edge', RelationshipEdge, PolylineEdgeView);
     configureModelElement(context, 'html', HtmlRootImpl, HtmlRootView);
     configureModelElement(context, 'pre-rendered', PreRenderedElementImpl, PreRenderedView);
     configureModelElement(context, 'routing-point', SRoutingHandleImpl, SRoutingHandleView);

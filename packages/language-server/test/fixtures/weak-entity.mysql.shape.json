@@ -1,0 +1,51 @@
+{
+  "tables": {
+    "Invoice": {
+      "columns": [
+        {
+          "name": "invoiceId",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "invoiceId"
+      ],
+      "foreignKeys": []
+    },
+    "InvoiceLine": {
+      "columns": [
+        {
+          "name": "invoiceId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "lineNumber",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "varchar(200)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "invoiceId",
+        "lineNumber"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "invoiceId"
+          ],
+          "referencedTable": "Invoice",
+          "referencedColumns": [
+            "invoiceId"
+          ]
+        }
+      ]
+    }
+  }
+}

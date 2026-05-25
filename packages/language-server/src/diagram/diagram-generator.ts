@@ -112,9 +112,6 @@ export class ERDiagramGenerator extends LangiumDiagramGenerator {
             // add UML specific edges here (if required)
         }
 
-        console.debug(`Generating edges for relationship ${relationship.name} with source ${relationship.source?.entity.ref} and targets ${relationship.targets.map(t => t.relationEntity.entity.ref)}`);
-
-        
         if (sourceId) { //add edge from the source entity to the relationship node
             const type = this.getRelationshipType(relationship.targets[0]);
             const sourceEdge = this.createEdge(relationship.source!, null, sourceId, relationshipNodeId!, type, ctx);
@@ -210,30 +207,7 @@ export class ERDiagramGenerator extends LangiumDiagramGenerator {
             text: sourceRelation.role ?? '',
         });
 
-        //legacy code, unused since targetRelation is always null in the current implementation
-        /*
-        if (targetRelation !== null) {
-            let relationship = sourceRelation.$container;
-            labels.push(<SLabel>{
-                type: 'label:top',
-                id: idCache.uniqueId(edgeId + '.relationName'),
-                text: relationship.name
-            });
-
-            labels.push(<SLabel>{
-                type: 'label:top-right',
-                id: idCache.uniqueId(edgeId + '.additionalLabel'),
-                text: this.getEdgeLabelText(notationType, this.getCardinality(targetRelation))
-            });
-            
-            labels.push(<SLabel>{
-                type: 'label:bottom-right',
-                id: idCache.uniqueId(edgeId + 'additionalRoleLabel'),
-                text: this.getRoleLabelText(targetRelation)
-            })
-        }
-        */
-       return labels;
+        return labels;
     }
         
 

@@ -1,0 +1,10 @@
+erdiagram Inheritance
+
+entity Person {
+    id: INT key
+    name: VARCHAR(100)
+}
+
+entity Employee extends Person {
+    salary: DECIMAL(10, 2)
+}

@@ -1,0 +1,7 @@
+erdiagram DecimalPrecision
+
+entity Product {
+    sku: VARCHAR(20) key
+    price: DECIMAL(10, 2)
+    weight: DECIMAL(8, 3)
+}

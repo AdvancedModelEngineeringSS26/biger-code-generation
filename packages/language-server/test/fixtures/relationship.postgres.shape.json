@@ -1,0 +1,73 @@
+{
+  "tables": {
+    "a": {
+      "columns": [
+        {
+          "name": "id1",
+          "type": "integer",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id1"
+      ],
+      "foreignKeys": []
+    },
+    "b": {
+      "columns": [
+        {
+          "name": "id2",
+          "type": "integer",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id2"
+      ],
+      "foreignKeys": []
+    },
+    "rel": {
+      "columns": [
+        {
+          "name": "id1",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "id2",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "attr",
+          "type": "character varying(255)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id1",
+        "id2"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "id1"
+          ],
+          "referencedTable": "a",
+          "referencedColumns": [
+            "id1"
+          ]
+        },
+        {
+          "columns": [
+            "id2"
+          ],
+          "referencedTable": "b",
+          "referencedColumns": [
+            "id2"
+          ]
+        }
+      ]
+    }
+  }
+}

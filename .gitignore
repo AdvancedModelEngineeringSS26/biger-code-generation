@@ -15,3 +15,6 @@ pack
 
 # generated SQL outputs from examples/
 examples/*.sql
+
+# local working docs
+docs/local/

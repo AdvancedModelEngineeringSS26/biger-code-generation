@@ -1,0 +1,134 @@
+{
+  "tables": {
+    "author": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "character varying(100)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    },
+    "book": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "character varying(13)",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "character varying(200)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn"
+      ],
+      "foreignKeys": []
+    },
+    "chapter": {
+      "columns": [
+        {
+          "name": "chapternumber",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "heading",
+          "type": "character varying(200)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "chapternumber"
+      ],
+      "foreignKeys": []
+    },
+    "contains": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "character varying(13)",
+          "nullable": false
+        },
+        {
+          "name": "chapternumber",
+          "type": "integer",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn",
+        "chapternumber"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "chapternumber"
+          ],
+          "referencedTable": "chapter",
+          "referencedColumns": [
+            "chapternumber"
+          ]
+        },
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        }
+      ]
+    },
+    "wrote": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "isbn",
+          "type": "character varying(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id",
+        "isbn"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "id"
+          ],
+          "referencedTable": "author",
+          "referencedColumns": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        }
+      ]
+    }
+  }
+}

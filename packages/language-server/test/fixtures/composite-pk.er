@@ -1,0 +1,7 @@
+erdiagram CompositePk
+
+entity Booking {
+    flightId: INT key
+    seatNumber: VARCHAR(4) key
+    passengerName: VARCHAR(100)
+}

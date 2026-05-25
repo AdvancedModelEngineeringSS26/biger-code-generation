@@ -1,0 +1,162 @@
+{
+  "tables": {
+    "Book": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn"
+      ],
+      "foreignKeys": []
+    },
+    "HasPage": {
+      "columns": [
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        },
+        {
+          "name": "pageNumber",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "isbn",
+        "pageNumber"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "Book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        },
+        {
+          "columns": [
+            "pageNumber"
+          ],
+          "referencedTable": "Page",
+          "referencedColumns": [
+            "pageNumber"
+          ]
+        }
+      ]
+    },
+    "Library": {
+      "columns": [
+        {
+          "name": "libId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "libId"
+      ],
+      "foreignKeys": []
+    },
+    "Owns": {
+      "columns": [
+        {
+          "name": "libId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "isbn",
+          "type": "varchar(13)",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "libId",
+        "isbn"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "isbn"
+          ],
+          "referencedTable": "Book",
+          "referencedColumns": [
+            "isbn"
+          ]
+        },
+        {
+          "columns": [
+            "libId"
+          ],
+          "referencedTable": "Library",
+          "referencedColumns": [
+            "libId"
+          ]
+        }
+      ]
+    },
+    "Page": {
+      "columns": [
+        {
+          "name": "pageNumber",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "pageNumber"
+      ],
+      "foreignKeys": []
+    },
+    "Stocks": {
+      "columns": [
+        {
+          "name": "libId",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "pageNumber",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "libId",
+        "pageNumber"
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "libId"
+          ],
+          "referencedTable": "Library",
+          "referencedColumns": [
+            "libId"
+          ]
+        },
+        {
+          "columns": [
+            "pageNumber"
+          ],
+          "referencedTable": "Page",
+          "referencedColumns": [
+            "pageNumber"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "tables": {
+    "a": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "character varying(80)",
+          "nullable": false
+        },
+        {
+          "name": "birthday",
+          "type": "timestamp without time zone",
+          "nullable": false
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "foreignKeys": []
+    }
+  }
+}
