@@ -10,12 +10,12 @@
         {
           "name": "name",
           "type": "varchar(80)",
-          "nullable": true
+          "nullable": false
         },
         {
           "name": "birthday",
           "type": "timestamp",
-          "nullable": true
+          "nullable": false
         }
       ],
       "primaryKey": [

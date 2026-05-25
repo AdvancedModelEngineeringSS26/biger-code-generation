@@ -10,22 +10,22 @@
         {
           "name": "score",
           "type": "double",
-          "nullable": true
+          "nullable": false
         },
         {
           "name": "photo",
           "type": "blob",
-          "nullable": true
+          "nullable": false
         },
         {
           "name": "bio",
           "type": "text",
-          "nullable": true
+          "nullable": false
         },
         {
           "name": "is_active",
           "type": "tinyint(1)",
-          "nullable": true
+          "nullable": false
         }
       ],
       "primaryKey": [

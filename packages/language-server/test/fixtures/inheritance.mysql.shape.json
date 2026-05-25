@@ -10,7 +10,7 @@
         {
           "name": "salary",
           "type": "decimal(10,2)",
-          "nullable": true
+          "nullable": false
         }
       ],
       "primaryKey": [
@@ -38,7 +38,7 @@
         {
           "name": "name",
           "type": "varchar(100)",
-          "nullable": true
+          "nullable": false
         }
       ],
       "primaryKey": [

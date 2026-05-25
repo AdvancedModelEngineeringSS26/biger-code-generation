@@ -41,7 +41,7 @@
         {
           "name": "attr",
           "type": "varchar(255)",
-          "nullable": true
+          "nullable": false
         }
       ],
       "primaryKey": [

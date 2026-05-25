@@ -15,7 +15,7 @@
         {
           "name": "passengerName",
           "type": "varchar(100)",
-          "nullable": true
+          "nullable": false
         }
       ],
       "primaryKey": [

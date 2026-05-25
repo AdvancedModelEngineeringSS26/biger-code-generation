@@ -10,12 +10,12 @@
         {
           "name": "price",
           "type": "decimal(10,2)",
-          "nullable": true
+          "nullable": false
         },
         {
           "name": "weight",
           "type": "decimal(8,3)",
-          "nullable": true
+          "nullable": false
         }
       ],
       "primaryKey": [

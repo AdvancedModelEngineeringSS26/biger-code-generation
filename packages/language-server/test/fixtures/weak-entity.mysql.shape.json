@@ -28,7 +28,7 @@
         {
           "name": "description",
           "type": "varchar(200)",
-          "nullable": true
+          "nullable": false
         }
       ],
       "primaryKey": [
