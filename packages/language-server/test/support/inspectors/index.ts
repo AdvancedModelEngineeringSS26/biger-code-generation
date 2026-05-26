@@ -14,32 +14,7 @@ export const SQL_INSPECTORS: Partial<Record<SqlDialect, SqlInspector>> = {
 export type { SchemaShape, TableShape, ColumnShape, ForeignKeyShape, SqlInspector };
 
 // ──────────────────────────────────────────────────────────────────────────
-// Serialisation — fixed key order so generated JSON files have stable diffs.
-// ──────────────────────────────────────────────────────────────────────────
-
-export function formatShape(shape: SchemaShape): string {
-    const ordered = {
-        tables: Object.fromEntries(
-            Object.entries(shape.tables).map(([name, t]) => [name, orderedTable(t)]),
-        ),
-    };
-    return JSON.stringify(ordered, null, 2) + '\n';
-}
-
-function orderedTable(t: TableShape): TableShape {
-    return {
-        columns: t.columns.map((c) => ({ name: c.name, type: c.type, nullable: c.nullable })),
-        primaryKey: [...t.primaryKey],
-        foreignKeys: t.foreignKeys.map((fk) => ({
-            columns: [...fk.columns],
-            referencedTable: fk.referencedTable,
-            referencedColumns: [...fk.referencedColumns],
-        })),
-    };
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Cross-dialect normalisation — used by Layer 5 equivalence test.
+// Cross-dialect normalisation — used by the equivalence test (Stage 4).
 //
 // Maps dialect-native types ("character varying(255)", "varchar(255)",
 // "tinyint(1)", "double precision") into a canonical category form
