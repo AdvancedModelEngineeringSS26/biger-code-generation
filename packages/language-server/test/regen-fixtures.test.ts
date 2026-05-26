@@ -3,8 +3,7 @@
 //
 //   REGEN_GOLDENS=1 yarn vitest run test/regen-fixtures.test.ts
 //
-// After running, review the diffs and run `SNAPSHOT_SHAPES=1 yarn test` to
-// refresh the corresponding shape sidecars.
+// After running, review the diffs and run `yarn test` to confirm.
 
 import { SQL_DIALECTS } from '@biger/common';
 import { readdirSync } from 'node:fs';
