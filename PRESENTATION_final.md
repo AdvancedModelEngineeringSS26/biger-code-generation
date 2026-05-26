@@ -1,48 +1,47 @@
-# Final Presentation: Code Generation (ER → SQL)
+# Code Generation (ER → SQL)
 
-**Blaž Bone · Tilen Ožbot** — 2026-06
+**Blaž Bone · Tilen Ožbot**
 
----
-
-## Slide 1 · Code Generation
-
-- Goal: generate SQL DDL from bigER `.er` models
-- Scope: generator part of the project
-- Targets: generic SQL, PostgreSQL, MySQL
-- Output: `CREATE TABLE`, primary keys, foreign keys, constraints
-- Integration: VS Code commands, LSP request, CLI export path
+June 2026
 
 ---
 
-## Slide 2 · Supported ER Concepts
+## Supported ER Concepts — Entities & Relationships
 
-| ER Concept | Textual | Graphical | Generator | Additional information |
-| --- | --- | --- | --- | --- |
-| **Entities** |  |  |  |  |
-| Strong Entity | ✅ | ✅ | ✅ | Generated as a SQL table. |
-| Weak Entity | ✅ | ✅ | ✅ | Generated as a SQL table with owner key columns and `ON DELETE CASCADE` when connected through a weak relationship. |
-| **Relationships** |  |  |  |  |
-| Binary Relationship | ✅ | ✅ | ✅ | `A -> B`; generated as a bridge table with primary and foreign keys. |
-| Unary Relationship | ✅ | ✅ | ⏺ | Supported when roles disambiguate repeated entity columns, e.g. <code>Employee[1&#124;"manager"] -> Employee[N&#124;"reports"]</code>. |
-| Ternary Relationship | ✅ | ✅ | ✅ | `A -> B -> C`; generated as a bridge table with all participant keys. |
-| N-ary Relationship | ❌ | ❌ | ⏺ | SQL emitter can build a bridge table from all relationship participants, but only ternary relationships are documented/tested. |
-| Cardinality Constraints | ✅ | ✅ | ⏺ | `1`, `N`, `0..1`, `0..N`; binary max-one constraints are generated as `UNIQUE` constraints. |
-| Participation Constraints | ✅ | ✅ | ❌ | Optional/mandatory participation is expressible textually/graphically, but mandatory participation is not enforced in generated SQL. |
-| Roles | ✅ | ✅ | ⏺ | <code>A[N&#124;"role"]</code>; used by the generator mainly to name columns in self-referential relationships. |
-| **Attributes** |  |  |  |  |
-| Entity Attributes | ✅ | ✅ | ✅ | Generated as table columns. |
-| Relationship Attributes | ✅ | ⏺ | ✅ | Generated as columns on the relationship bridge table. |
-| Keys | ✅ | ✅ | ✅ | `attr key`; weak entities use `attr partial_key` in the generated composite primary key. |
-| Datatypes | ✅ | ✅ | ✅ | `attr1: INT` or `attr2: VARCHAR(50)`; PostgreSQL/MySQL dialect mapping and decimal precision are supported. |
-| Composite Attribute | ❌ | ❌ | ❌ |  |
-| Multi-valued Attribute | ✅ | ✅ | ✅ | `attr multivalued`; generated as a separate side table named `<Entity>_<attr>`. |
-| Derived Attribute | ✅ | ✅ | ✅ | `attr derived`; omitted from generated SQL because derived values are not stored. |
-| **EER Concepts** |  |  |  |  |
-| Generalization | ✅ | ✅ | ✅ | `A extends B`; generated as a child table whose primary key is also a foreign key to the parent table. |
+| Concept | T | G | Gen |
+| --- | :-: | :-: | :-: |
+| Strong entity | ✅ | ✅ | ✅ |
+| Weak entity | ✅ | ✅ | ✅ |
+| Binary rel. | ✅ | ✅ | ✅ |
+| Unary rel. | ✅ | ✅ | ⏺ |
+| Ternary rel. | ✅ | ✅ | ✅ |
+| N-ary (≥4) | ❌ | ❌ | ⏺ |
+| Cardinality | ✅ | ✅ | ⏺ |
+| Participation | ✅ | ✅ | ❌ |
+| Roles | ✅ | ✅ | ⏺ |
+
+**T** = textual · **G** = graphical · **Gen** = generator · ✅ supported · ⏺ partial · ❌ unsupported
 
 ---
 
-## Slide 3 · Assumption 1 — Explicit Relational Artifacts
+## Supported ER Concepts — Attributes & EER
+
+| Concept | T | G | Gen |
+| --- | :-: | :-: | :-: |
+| Entity attr. | ✅ | ✅ | ✅ |
+| Rel. attr. | ✅ | ⏺ | ✅ |
+| Keys | ✅ | ✅ | ✅ |
+| Datatypes | ✅ | ✅ | ✅ |
+| Composite | ❌ | ❌ | ❌ |
+| Multivalued | ✅ | ✅ | ✅ |
+| Derived | ✅ | ✅ | ✅ |
+| Generalization | ✅ | ✅ | ✅ |
+
+**T** = textual · **G** = graphical · **Gen** = generator · ✅ supported · ⏺ partial · ❌ unsupported
+
+---
+
+## Assumption 1 — Explicit Relational Artifacts
 
 - The generator uses deterministic ER → relational mapping rules
 - Strong entities become tables
@@ -58,7 +57,7 @@ Why:
 
 ---
 
-## Slide 4 · Assumption 2 — Constraints Where SQL Can Express Them
+## Assumption 2 — Constraints Where SQL Can Express Them
 
 - Primary keys are generated from `key` attributes
 - Weak entity identity is generated from owner key + `partial_key`
@@ -74,7 +73,7 @@ Boundary:
 
 ---
 
-## Slide 5 · Assumption 3 — Dialects Normalize Types, Not Semantics
+## Assumption 3 — Dialects Normalize Types, Not Semantics
 
 Example input:
 
