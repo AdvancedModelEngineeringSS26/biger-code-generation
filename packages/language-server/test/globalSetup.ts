@@ -10,11 +10,24 @@ import { GenericContainer, type StartedTestContainer } from 'testcontainers';
 // MySQL block cleanly with a "no engine" notice.
 
 const STARTUP_TIMEOUT_MS = 120_000;
+const FORCE_TESTCONTAINERS = process.env.BIGER_FORCE_TESTCONTAINERS === '1';
 
 let container: StartedMySqlContainer | undefined;
 let mongoContainer: StartedTestContainer | undefined;
 
 export default async function setup(): Promise<() => Promise<void>> {
+    if (process.platform !== 'linux' && !FORCE_TESTCONTAINERS) {
+        process.env.MYSQL_TEST_AVAILABLE = 'false';
+        process.env.MONGO_TEST_AVAILABLE = 'false';
+        console.warn(
+            '[globalSetup] Container-backed database tests run on Linux CI only. ' +
+            'Set BIGER_FORCE_TESTCONTAINERS=1 to opt in on this machine.',
+        );
+        return async () => {
+            /* no containers started */
+        };
+    }
+
     try {
         container = await new MySqlContainer('mysql:8.4')
             .withDatabase('biger_test')
