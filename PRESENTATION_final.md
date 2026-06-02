@@ -131,3 +131,5 @@ add settings json to know which settings we want. like mapping default like doub
 
 reserved words from sql mongo we... should be underlined in the language server. and showcased when typing for user.
 
+
+last presentation should be 26.6. presrnt simple demo + mybe few slides of how we wired up no code showcase.
