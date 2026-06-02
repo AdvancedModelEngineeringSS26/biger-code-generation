@@ -1,5 +1,6 @@
 import type { ExportModelParams, ExportModelResult, ExportTarget } from '@biger/common';
 import type { EntityRelationshipServices } from '../entity-relationship-module.js';
+import { MongoExporter } from './mongo/mongo-exporter.js';
 import { SqlExporter } from './sql/sql-exporter.js';
 
 export interface Exporter {
@@ -34,6 +35,7 @@ export class ExportService {
 
 export function createDefaultExportService(services: EntityRelationshipServices): ExportService {
     return new ExportService([
+        new MongoExporter(services),
         new SqlExporter(services)
     ]);
 }

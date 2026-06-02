@@ -102,12 +102,17 @@
                 "command": "biger.generate.mysql",
                 "title": "Generate MySQL",
                 "category": "bigER"
+            },
+            {
+                "command": "biger.generate.mongo",
+                "title": "Generate MongoDB",
+                "category": "bigER"
             }
         ],
         "submenus": [
             {
                 "id": "biger.generate",
-                "label": "Generate SQL"
+                "label": "Generate"
             }
         ],
         "configuration": {
@@ -153,6 +158,10 @@
                 {
                     "command": "biger.generate.mysql",
                     "when": "editorLangId == 'entity-relationship'"
+                },
+                {
+                    "command": "biger.generate.mongo",
+                    "when": "editorLangId == 'entity-relationship'"
                 }
             ],
             "editor/context": [
@@ -186,6 +195,10 @@
                 {
                     "command": "biger.generate.mysql",
                     "group": "1_generate@3"
+                },
+                {
+                    "command": "biger.generate.mongo",
+                    "group": "1_generate@4"
                 }
             ],
             "explorer/context": [

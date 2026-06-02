@@ -1,4 +1,4 @@
-// One-shot regeneration of every .{postgres,mysql}.sql golden from its .er.
+// One-shot regeneration of every .{postgres,mysql}.sql and .mongo.js golden from its .er.
 // Gated on REGEN_GOLDENS=1 to keep `yarn test` deterministic.
 //
 //   REGEN_GOLDENS=1 yarn vitest run test/regen-fixtures.test.ts
@@ -39,5 +39,17 @@ describe.skipIf(!REGEN_MODE)('regen-fixtures (gated)', () => {
                 await writeFile(outPath, result.content);
             });
         }
+
+        it(`regenerates ${stem}.mongo.js`, async () => {
+            const erPath = path.join(fixturesDir, erFile);
+            const erContent = await readFile(erPath, 'utf-8');
+            const result = await exporter.exportModel({
+                sourceUri: pathToFileURL(erPath).toString(),
+                erContent,
+                target: 'mongo',
+            });
+            const outPath = path.join(fixturesDir, `${stem}.mongo.js`);
+            await writeFile(outPath, result.content);
+        });
     }
 });

@@ -1,7 +1,8 @@
 import type { SqlDialect } from '@biger/common';
+import { MongoContainerDriver } from './mongo-testcontainers.js';
 import { MysqlContainerDriver } from './mysql-testcontainers.js';
 import { PostgresPGliteDriver } from './postgres-pglite.js';
-import type { SqlEngineDriver } from './types.js';
+import type { MongoEngineDriver, SqlEngineDriver } from './types.js';
 
 // Per-dialect SQL engine factories. Adding a dialect means adding one entry
 // here and providing a driver module — Stage 3 (and future Layer 4/5) will
@@ -17,4 +18,6 @@ export const SQL_ENGINES: Partial<Record<SqlDialect, () => SqlEngineDriver>> = {
     mysql: () => new MysqlContainerDriver(),
 };
 
-export type { SqlEngineDriver, EngineDriver } from './types.js';
+export const MONGO_ENGINE = (): MongoEngineDriver => new MongoContainerDriver();
+
+export type { SqlEngineDriver, MongoEngineDriver, EngineDriver } from './types.js';
