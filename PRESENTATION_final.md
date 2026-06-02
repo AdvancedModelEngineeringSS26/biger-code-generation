@@ -118,3 +118,16 @@ Adding a test: drop 3 files → `yarn test` → done. Zero code changes.
 - How do we implement generating indexes? (er language does not support it)
 - Should we add a validator warning about reserved words? (User, Order table names)
 - When can we do the last presentation?
+
+
+----
+
+add mongo language support.
+
+dont add or care about indexing.
+
+add settings json to know which settings we want. like mapping default like double int and stuff. how multiple tables work. plugin config make it huge everything can be set.
+
+
+reserved words from sql mongo we... should be underlined in the language server. and showcased when typing for user.
+
