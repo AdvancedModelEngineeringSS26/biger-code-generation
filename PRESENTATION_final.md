@@ -122,7 +122,7 @@ Adding a test: drop 3 files → `yarn test` → done. Zero code changes.
 
 ----
 
-add mongo language support.
+add mongo language support. [x]
 
 dont add or care about indexing.
 
