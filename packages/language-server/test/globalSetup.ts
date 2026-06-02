@@ -1,4 +1,5 @@
 import { MySqlContainer, type StartedMySqlContainer } from '@testcontainers/mysql';
+import { GenericContainer, type StartedTestContainer } from 'testcontainers';
 
 // Vitest globalSetup — runs once before any test file loads, exposes a teardown.
 //
@@ -9,10 +10,24 @@ import { MySqlContainer, type StartedMySqlContainer } from '@testcontainers/mysq
 // MySQL block cleanly with a "no engine" notice.
 
 const STARTUP_TIMEOUT_MS = 120_000;
+const FORCE_TESTCONTAINERS = process.env.BIGER_FORCE_TESTCONTAINERS === '1';
 
 let container: StartedMySqlContainer | undefined;
+let mongoContainer: StartedTestContainer | undefined;
 
 export default async function setup(): Promise<() => Promise<void>> {
+    if (process.platform !== 'linux' && !FORCE_TESTCONTAINERS) {
+        process.env.MYSQL_TEST_AVAILABLE = 'false';
+        process.env.MONGO_TEST_AVAILABLE = 'false';
+        console.warn(
+            '[globalSetup] Container-backed database tests run on Linux CI only. ' +
+            'Set BIGER_FORCE_TESTCONTAINERS=1 to opt in on this machine.',
+        );
+        return async () => {
+            /* no containers started */
+        };
+    }
+
     try {
         container = await new MySqlContainer('mysql:8.4')
             .withDatabase('biger_test')
@@ -33,10 +48,29 @@ export default async function setup(): Promise<() => Promise<void>> {
         console.warn(`[globalSetup] MySQL container unavailable — Stage 3 mysql tests will skip.\n  reason: ${reason}`);
     }
 
+    try {
+        mongoContainer = await new GenericContainer('mongo:7')
+            .withExposedPorts(27017)
+            .withStartupTimeout(STARTUP_TIMEOUT_MS)
+            .start();
+
+        process.env.MONGO_TEST_URI = `mongodb://${mongoContainer.getHost()}:${mongoContainer.getMappedPort(27017)}`;
+        process.env.MONGO_TEST_DATABASE = 'biger_test';
+        process.env.MONGO_TEST_AVAILABLE = 'true';
+    } catch (err) {
+        process.env.MONGO_TEST_AVAILABLE = 'false';
+        const reason = err instanceof Error ? err.message : String(err);
+        console.warn(`[globalSetup] MongoDB container unavailable — mongo engine tests will skip.\n  reason: ${reason}`);
+    }
+
     return async () => {
         if (container) {
             await container.stop();
             container = undefined;
+        }
+        if (mongoContainer) {
+            await mongoContainer.stop();
+            mongoContainer = undefined;
         }
     };
 }

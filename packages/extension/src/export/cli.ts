@@ -13,6 +13,10 @@ interface SqlExportCommandOptions {
     dialect: string;
 }
 
+interface MongoExportCommandOptions {
+    destination?: string;
+}
+
 export async function runExportCli(argv: string[]): Promise<void> {
     const program = new Command()
         .name('biger-export')
@@ -34,10 +38,40 @@ export async function runExportCli(argv: string[]): Promise<void> {
             await exportSql(file, options);
         });
 
+    exportCommand
+        .command('mongo')
+        .argument(
+            '<file>',
+            `Source ER file (${EntityRelationshipLanguageMetaData.fileExtensions.join(', ')})`
+        )
+        .option('-d, --destination <path>', 'Destination directory or target MongoDB script path')
+        .action(async (file: string, options: MongoExportCommandOptions) => {
+            await exportMongo(file, options);
+        });
+
     await program.parseAsync(argv);
 }
 
 async function exportSql(file: string, options: SqlExportCommandOptions): Promise<void> {
+    await exportFile(file, options.destination, {
+        target: 'sql',
+        targetOptions: {
+            dialect: options.dialect
+        }
+    });
+}
+
+async function exportMongo(file: string, options: MongoExportCommandOptions): Promise<void> {
+    await exportFile(file, options.destination, {
+        target: 'mongo',
+    });
+}
+
+async function exportFile(
+    file: string,
+    destination: string | undefined,
+    exportParams: Pick<ExportModelParams, 'target' | 'targetOptions'>
+): Promise<void> {
     const sourcePath = path.resolve(file);
     assertSupportedExtension(sourcePath);
     await assertFileExists(sourcePath);
@@ -48,14 +82,11 @@ async function exportSql(file: string, options: SqlExportCommandOptions): Promis
     const params: ExportModelParams = {
         sourceUri: pathToFileURL(sourcePath).toString(),
         erContent: sourceContent,
-        target: 'sql',
-        targetOptions: {
-            dialect: options.dialect
-        }
+        ...exportParams
     };
 
     const result = await exportService.exportModel(params);
-    const outputPath = await resolveOutputPath(sourcePath, options.destination, result.fileExtension);
+    const outputPath = await resolveOutputPath(sourcePath, destination, result.fileExtension);
 
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, result.content, 'utf-8');

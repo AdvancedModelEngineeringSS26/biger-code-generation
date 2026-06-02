@@ -1,7 +1,8 @@
 import type { SqlDialect } from '@biger/common';
+import { MongoDbInspector } from './mongo.js';
 import { MysqlInspector } from './mysql.js';
 import { PostgresInspector } from './postgres.js';
-import type { ColumnShape, ForeignKeyShape, SchemaShape, SqlInspector, TableShape } from './types.js';
+import type { ColumnShape, ForeignKeyShape, MongoInspector, SchemaShape, SqlInspector, TableShape } from './types.js';
 
 // Per-dialect inspectors. Same registry pattern as SQL_ENGINES — a dialect
 // without an inspector is a clean skip at the test-definition level.
@@ -11,7 +12,9 @@ export const SQL_INSPECTORS: Partial<Record<SqlDialect, SqlInspector>> = {
     mysql: new MysqlInspector(),
 };
 
-export type { SchemaShape, TableShape, ColumnShape, ForeignKeyShape, SqlInspector };
+export const MONGO_INSPECTOR: MongoInspector = new MongoDbInspector();
+
+export type { SchemaShape, TableShape, ColumnShape, ForeignKeyShape, SqlInspector, MongoInspector };
 
 // ──────────────────────────────────────────────────────────────────────────
 // Cross-dialect normalisation — used by the equivalence test (Stage 4).

@@ -1,6 +1,6 @@
 export const EXPORT_MODEL_REQUEST = 'biger/exportModel';
 
-export type ExportTarget = 'sql' | (string & {});
+export type ExportTarget = 'sql' | 'mongo' | (string & {});
 
 // Canonical list of SQL dialects the exporter supports.
 // Adding a dialect here forces every test fixture to gain a matching
@@ -12,6 +12,10 @@ export type SqlGenerationDialect = (typeof SQL_GENERATION_DIALECTS)[number];
 
 export interface SqlExportOptions {
     dialect?: SqlGenerationDialect;
+    generateDrop?: boolean;
+}
+
+export interface MongoExportOptions {
     generateDrop?: boolean;
 }
 

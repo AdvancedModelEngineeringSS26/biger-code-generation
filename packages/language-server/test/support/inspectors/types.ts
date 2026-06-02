@@ -1,4 +1,6 @@
 import type { SqlEngineDriver } from '../engines/types.js';
+import type { MongoEngineDriver } from '../engines/types.js';
+import type { MongoScriptShape } from '../mongo-script.js';
 
 // Schema shape — what Layer 4 asserts against. Per-dialect by design: column
 // types stay dialect-native (Postgres "character varying" vs MySQL "varchar")
@@ -31,4 +33,8 @@ export interface ForeignKeyShape {
 
 export interface SqlInspector {
     snapshot(driver: SqlEngineDriver): Promise<SchemaShape>;
+}
+
+export interface MongoInspector {
+    snapshot(driver: MongoEngineDriver): Promise<MongoScriptShape>;
 }

@@ -41,4 +41,26 @@ describe('runExportCli', () => {
             }
         }
     );
+
+    it('writes a .mongo.js file matching the MongoDB spec', async () => {
+        const dir = await mkdtemp(path.join(tmpdir(), 'biger-cli-'));
+        try {
+            const src = path.join(dir, `${fixtureName}.er`);
+            await copyFile(fixturePath, src);
+
+            await runExportCli([
+                'node',
+                'biger-export',
+                'export',
+                'mongo',
+                src
+            ]);
+
+            const written = await readFile(path.join(dir, `${fixtureName}.mongo.js`), 'utf-8');
+            const golden = await readFile(path.join(fixturesDir, `${fixtureName}.mongo.js`), 'utf-8');
+            expect(written).toBe(golden);
+        } finally {
+            await rm(dir, { recursive: true, force: true });
+        }
+    });
 });
