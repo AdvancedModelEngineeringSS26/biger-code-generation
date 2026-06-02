@@ -133,3 +133,5 @@ reserved words from sql mongo we... should be underlined in the language server.
 
 
 last presentation should be 26.6. presrnt simple demo + mybe few slides of how we wired up no code showcase.
+
+kao testing pipeline + code seperation + actual demo.
