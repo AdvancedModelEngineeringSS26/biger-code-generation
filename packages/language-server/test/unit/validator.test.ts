@@ -20,6 +20,10 @@ function findDiagnostic(diagnostics: { severity?: number; message: string }[], s
     return diagnostics.find((d) => d.severity === severity && pattern.test(d.message));
 }
 
+function reservedKeywordDiagnostics(diagnostics: { message: string }[]) {
+    return diagnostics.filter((d) => /reserved keyword/.test(d.message));
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Sanity check — a valid model must not produce diagnostics.
 // Guards against "we accidentally always warn."
@@ -85,6 +89,76 @@ describe('validator > naming', () => {
             entity a { id: INT key }
         `);
         expect(findDiagnostic(ds, WARNING, /capital/i)).toBeTruthy();
+    });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Reserved target-dialect keywords (warnings)
+// ──────────────────────────────────────────────────────────────────────────────
+
+describe('validator > reserved generator keywords', () => {
+    it('warns on entity names and lists every affected SQL dialect', async () => {
+        const ds = await diagnose(`
+            erdiagram M
+            entity select { id: INT key }
+        `);
+
+        expect(findDiagnostic(ds, WARNING, /"select" is a reserved keyword in SQL, PostgreSQL, and MySQL/)).toBeTruthy();
+        expect(findDiagnostic(ds, ERROR, /reserved keyword/)).toBeFalsy();
+    });
+
+    it('warns on attribute and relationship names used by generators', async () => {
+        const ds = await diagnose(`
+            erdiagram M
+            entity A {
+                id: INT key
+                from: INT
+            }
+            entity B { id: INT key }
+            relationship where { A -> B }
+        `);
+
+        expect(findDiagnostic(ds, WARNING, /"from" is a reserved keyword in SQL, PostgreSQL, and MySQL/)).toBeTruthy();
+        expect(findDiagnostic(ds, WARNING, /"where" is a reserved keyword in SQL, PostgreSQL, and MySQL/)).toBeTruthy();
+    });
+
+    it('warns on relationship roles because they prefix generated reference fields', async () => {
+        const ds = await diagnose(`
+            erdiagram M
+            entity A { id: INT key }
+            entity B { id: INT key }
+            relationship R { A[1|"select"] -> B[N] }
+        `);
+
+        expect(findDiagnostic(ds, WARNING, /"select" is a reserved keyword in SQL, PostgreSQL, and MySQL/)).toBeTruthy();
+    });
+
+    it('warns on MongoDB-reserved generated field names', async () => {
+        const ds = await diagnose(`
+            erdiagram M
+            entity A {
+                id: INT key
+                _id: VARCHAR
+            }
+        `);
+
+        expect(findDiagnostic(ds, WARNING, /"_id" is a reserved keyword in MongoDB/)).toBeTruthy();
+    });
+
+    it('does not warn for ER syntax keywords or datatype names used in grammar positions', async () => {
+        const ds = await diagnose(`
+            erdiagram M
+            notation = uml
+            entity A {
+                public id: INT key
+                name: VARCHAR optional
+                total: DECIMAL derived
+            }
+            entity B { id: INT key }
+            relationship R { A[1] -> B[N] }
+        `);
+
+        expect(reservedKeywordDiagnostics(ds)).toEqual([]);
     });
 });
 

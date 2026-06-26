@@ -2,6 +2,7 @@ import type { ValidationAcceptor, ValidationChecks } from 'langium';
 import type { Entity, EntityRelationshipAstType, Model, Relationship, RelationEntity, Attribute } from './generated/ast.js';
 import type { EntityRelationshipServices } from './entity-relationship-module.js';
 import { isModel } from './generated/ast.js';
+import { getReservedKeywordWarning } from './export/reserved-keywords.js';
 
 /**
  * Register custom validation checks.
@@ -11,10 +12,10 @@ export function registerValidationChecks(services: EntityRelationshipServices) {
     const validator = services.validation.EntityRelationshipValidator;
     const checks: ValidationChecks<EntityRelationshipAstType> = {
         Model: [validator.checkModelName, validator.checkModelEntityNamesForDuplicates, validator.checkModelRelationshipNamesForDuplicates],
-        Entity: [validator.checkEntityOrRelationshipAttributes, validator.checkEntityStartsWithCapitalLetter, validator.checkEntityKeys],
-        Relationship: [validator.checkEntityOrRelationshipAttributes, validator.checkRelationshipAggregationCompositionForNotations],
-        RelationEntity: [validator.checkRelationEntityCardinalityForNotations],
-        Attribute: [validator.checkAttributeVisibilityForUMLNotation]
+        Entity: [validator.checkEntityOrRelationshipAttributes, validator.checkEntityStartsWithCapitalLetter, validator.checkEntityKeys, validator.checkEntityNameForReservedKeyword],
+        Relationship: [validator.checkEntityOrRelationshipAttributes, validator.checkRelationshipAggregationCompositionForNotations, validator.checkRelationshipNameForReservedKeyword],
+        RelationEntity: [validator.checkRelationEntityCardinalityForNotations, validator.checkRelationRoleForReservedKeyword],
+        Attribute: [validator.checkAttributeVisibilityForUMLNotation, validator.checkAttributeNameForReservedKeyword]
     };
     registry.register(checks, validator);
 }
@@ -83,6 +84,15 @@ export class EntityRelationshipValidator {
                 accept('warning', 'Entity name should start with a capital letter.', { node: entity, property: 'name' })
             }
         }
+    }
+
+    /**
+     * Warns if an entity name collides with a reserved keyword in a generator dialect.
+     * @param entity entity to check
+     * @param accept validation acceptor containing information about the validation (error messages, warnings, ...)
+     */
+    checkEntityNameForReservedKeyword(entity: Entity, accept: ValidationAcceptor): void {
+        this.checkReservedKeywordIdentifier(entity.name, accept, entity, 'name');
     }
 
     /**
@@ -180,6 +190,15 @@ export class EntityRelationshipValidator {
         }
     }
 
+    /**
+     * Warns if a relationship name collides with a reserved keyword in a generator dialect.
+     * @param relationship relationship to check
+     * @param accept validation acceptor containing information about the validation (error messages, warnings, ...)
+     */
+    checkRelationshipNameForReservedKeyword(relationship: Relationship, accept: ValidationAcceptor): void {
+        this.checkReservedKeywordIdentifier(relationship.name, accept, relationship, 'name');
+    }
+
     /*
     *   RELATION ENTITY
     */
@@ -206,6 +225,15 @@ export class EntityRelationshipValidator {
         }
     }
 
+    /**
+     * Warns if a relationship role collides with a reserved keyword in a generator dialect.
+     * @param relation relation entity to check
+     * @param accept validation acceptor containing information about the validation (error messages, warnings, ...)
+     */
+    checkRelationRoleForReservedKeyword(relation: RelationEntity, accept: ValidationAcceptor): void {
+        this.checkReservedKeywordIdentifier(relation.role, accept, relation, 'role');
+    }
+
     /*
     *   ATTRIBUTE
     */
@@ -225,6 +253,15 @@ export class EntityRelationshipValidator {
         }
     }
 
+    /**
+     * Warns if an attribute name collides with a reserved keyword in a generator dialect.
+     * @param attribute attribute to check
+     * @param accept validation acceptor containing information about the validation (error messages, warnings, ...)
+     */
+    checkAttributeNameForReservedKeyword(attribute: Attribute, accept: ValidationAcceptor): void {
+        this.checkReservedKeywordIdentifier(attribute.name, accept, attribute, 'name');
+    }
+
     /*
     *   ENTITY & RELATIONSHIP
     */
@@ -242,5 +279,17 @@ export class EntityRelationshipValidator {
                 accept('error', `Multiple attributes named \"'${attribute.name}'\".`, { node: attribute, property: 'name' });
             }
         });
+    }
+
+    private checkReservedKeywordIdentifier(
+        identifier: string | undefined,
+        accept: ValidationAcceptor,
+        node: Entity | Relationship | Attribute | RelationEntity,
+        property: string
+    ): void {
+        const warning = getReservedKeywordWarning(identifier);
+        if (warning) {
+            accept('warning', warning, { node, property });
+        }
     }
 }

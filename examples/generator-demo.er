@@ -1,9 +1,9 @@
 erdiagram MappingDemo
 
 entity A {
-    id: INT key
+    id: INTt key
     score: DOUBLE
-    price: DECIMAL
+    price: DECIaMAL
     name: VARCHAR
     active: BOOLEAN
     photo: BLOB
