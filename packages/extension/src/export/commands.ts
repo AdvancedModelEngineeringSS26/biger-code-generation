@@ -3,6 +3,8 @@ import {
     type ExportModelParams,
     type ExportModelResult,
     type ExportTarget,
+    type MongoExportOptions,
+    type SqlExportOptions,
     type SqlGenerationDialect
 } from '@biger/common';
 import * as path from 'node:path';
@@ -63,18 +65,23 @@ async function exportDocument(
 
     try {
         const generationConfig = getGenerationConfig();
+        const targetOptions: SqlExportOptions | MongoExportOptions = command.target === 'sql'
+            ? {
+                dialect: command.dialect,
+                generateDrop: generationConfig.generateDrop
+            }
+            : {
+                generateDrop: generationConfig.generateDrop
+            };
+        if (generationConfig.exportConfig) {
+            targetOptions.exportConfig = generationConfig.exportConfig;
+        }
+
         const request: ExportModelParams = {
             sourceUri: document.uri.toString(),
             erContent: document.getText(),
             target: command.target,
-            targetOptions: command.target === 'sql'
-                ? {
-                    dialect: command.dialect,
-                    generateDrop: generationConfig.generateDrop
-                }
-                : {
-                    generateDrop: generationConfig.generateDrop
-                }
+            targetOptions: targetOptions as Record<string, unknown>
         };
 
         const result = await languageClient.sendRequest<ExportModelResult>(EXPORT_MODEL_REQUEST, request);

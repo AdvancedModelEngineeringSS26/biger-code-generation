@@ -1,8 +1,8 @@
-import type { SqlGenerationDialect } from '@biger/common';
+import type { DataTypeMappingConfiguration, SqlGenerationDialect } from '@biger/common';
 
 export interface Dialect {
     readonly name: SqlGenerationDialect;
-    mapDataType(type: string): string;
+    mapDataType(type: string, overrides?: DataTypeMappingConfiguration): string;
 }
 
 // Aggregate type sets — union across all 5 bigER dialects (postgres, mysql, mssql, oracle, db2).
@@ -68,6 +68,31 @@ const ALL_BINARY_TYPES = new Set<string>([
 const ALL_BOOLEAN_TYPES = new Set([
     'BIT', 'BOOLEAN',
 ]);
+
+interface SqlTypeFamilyMatcher {
+    readonly aliases: readonly string[];
+    matches(type: string): boolean;
+}
+
+const SQL_TYPE_FAMILY_MATCHERS: readonly SqlTypeFamilyMatcher[] = [
+    { aliases: ['integer'], matches: (type) => ALL_INTEGER_TYPES.has(type) },
+    { aliases: ['float', 'double', 'floatdouble'], matches: (type) => ALL_FLOAT_TYPES.has(type) },
+    { aliases: ['decimal'], matches: (type) => ALL_DECIMAL_TYPES.has(type) },
+    { aliases: ['numeric'], matches: (type) => ALL_NUMERIC_TYPES.has(type) },
+
+    { aliases: ['varchar'], matches: (type) => ALL_VARCHAR_TYPES.has(type) },
+    { aliases: ['char'], matches: (type) => ALL_CHAR_TYPES.has(type) },
+    { aliases: ['string', 'character'], matches: (type) => ALL_CHARACTER_TYPES.has(type) },
+
+    { aliases: ['datetime', 'timestamp'], matches: (type) => ALL_DATETIME_TYPES.has(type) },
+    { aliases: ['date', 'timing'], matches: (type) => ALL_TIMING_TYPES.has(type) },
+
+    { aliases: ['blob'], matches: (type) => ALL_BLOB_TYPES.has(type) },
+    { aliases: ['clob'], matches: (type) => ALL_CLOB_TYPES.has(type) },
+    { aliases: ['binary'], matches: (type) => ALL_BINARY_TYPES.has(type) },
+
+    { aliases: ['boolean', 'bool'], matches: (type) => ALL_BOOLEAN_TYPES.has(type) },
+];
 
 // ------ Postgres ------
 
@@ -143,9 +168,12 @@ interface DialectFirsts {
     BOOLEAN: string;
 }
 
-function makeMapper(ownAllTypes: Set<string>, firsts: DialectFirsts): (type: string) => string {
-    return (type) => {
+function makeMapper(ownAllTypes: Set<string>, firsts: DialectFirsts): Dialect['mapDataType'] {
+    return (type, overrides) => {
         const upper = type.toUpperCase();
+        const override = mapSqlDataTypeOverride(type, upper, overrides);
+        if (override) return override;
+
         if (ownAllTypes.has(upper)) return type;
 
         if (ALL_INTEGER_TYPES.has(upper)) return firsts.INTEGER;
@@ -213,7 +241,10 @@ export const mysqlDialect: Dialect = {
 
 export const genericDialect: Dialect = {
     name: 'generic',
-    mapDataType: (type) => type,
+    mapDataType: (type, overrides) => {
+        const upper = type.toUpperCase();
+        return mapSqlDataTypeOverride(type, upper, overrides) ?? type;
+    },
 };
 
 export const DIALECTS: Record<SqlGenerationDialect, Dialect> = {
@@ -221,3 +252,65 @@ export const DIALECTS: Record<SqlGenerationDialect, Dialect> = {
     postgres: postgresDialect,
     mysql: mysqlDialect,
 };
+
+function mapSqlDataTypeOverride(
+    originalType: string,
+    upperType: string,
+    overrides: DataTypeMappingConfiguration | undefined,
+): string | undefined {
+    const exact = findExactOverride(overrides?.types, originalType);
+    if (exact) return exact;
+
+    for (const matcher of SQL_TYPE_FAMILY_MATCHERS) {
+        if (!matcher.matches(upperType)) continue;
+        const family = findFamilyOverride(overrides?.typeFamilies, matcher.aliases);
+        if (family) return family;
+    }
+
+    return undefined;
+}
+
+function findExactOverride(mappings: Record<string, unknown> | undefined, dataType: string): string | undefined {
+    if (!isRecord(mappings)) return undefined;
+
+    const normalizedDataType = normalizeDataTypeKey(dataType);
+    for (const [key, value] of Object.entries(mappings)) {
+        if (normalizeDataTypeKey(key) !== normalizedDataType) continue;
+        return nonEmptyString(value);
+    }
+
+    return undefined;
+}
+
+function findFamilyOverride(
+    mappings: Record<string, unknown> | undefined,
+    aliases: readonly string[],
+): string | undefined {
+    if (!isRecord(mappings)) return undefined;
+
+    const normalizedAliases = new Set(aliases.map(normalizeFamilyKey));
+    for (const [key, value] of Object.entries(mappings)) {
+        if (!normalizedAliases.has(normalizeFamilyKey(key))) continue;
+        return nonEmptyString(value);
+    }
+
+    return undefined;
+}
+
+function normalizeDataTypeKey(value: string): string {
+    return value.trim().toUpperCase();
+}
+
+function normalizeFamilyKey(value: string): string {
+    return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function nonEmptyString(value: unknown): string | undefined {
+    if (typeof value !== 'string') return undefined;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}

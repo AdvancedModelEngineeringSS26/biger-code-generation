@@ -1,4 +1,4 @@
-import type { ExportModelParams, MongoExportOptions } from '@biger/common';
+import { sanitizeExportConfiguration, type ExportModelParams, type MongoExportOptions } from '@biger/common';
 import { URI } from 'langium';
 import type { EntityRelationshipServices } from '../../entity-relationship-module.js';
 import type { Model } from '../../generated/ast.js';
@@ -14,7 +14,8 @@ export class MongoExporter implements Exporter {
     async exportModel(params: ExportModelParams): Promise<string> {
         const opts = params.targetOptions as MongoExportOptions | undefined;
         const model = await this.parseToModel(params.erContent, params.sourceUri);
-        return new MongoEmitter().emit(model, opts);
+        const exportConfig = sanitizeExportConfiguration(opts?.exportConfig);
+        return new MongoEmitter(exportConfig?.typeMappings?.mongo).emit(model, opts);
     }
 
     private async parseToModel(erContent: string, sourceUri: string): Promise<Model> {

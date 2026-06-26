@@ -1,0 +1,10 @@
+erdiagram MappingDemo
+
+entity A {
+    id: INT key
+    score: DOUBLE
+    price: DECIMAL
+    name: VARCHAR
+    active: BOOLEAN
+    photo: BLOB
+}

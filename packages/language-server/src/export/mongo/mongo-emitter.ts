@@ -1,4 +1,4 @@
-import type { MongoExportOptions } from '@biger/common';
+import type { DataTypeMappingConfiguration, MongoExportOptions } from '@biger/common';
 import type { Attribute, DataType, Entity, Model, Relationship } from '../../generated/ast.js';
 import { findWeakOwner, isAtMostOne } from '../../model/model-queries.js';
 import { mapBsonType } from './bson-types.js';
@@ -16,6 +16,8 @@ interface FieldDef {
 }
 
 export class MongoEmitter {
+    constructor(private readonly typeMappings?: DataTypeMappingConfiguration) {}
+
     emit(model: Model, opts?: MongoExportOptions): string {
         const collections = this.buildCollections(model);
         const chunks: string[] = [];
@@ -285,10 +287,10 @@ export class MongoEmitter {
         if ('type' in field && field.type?.MULTIVALUED) {
             return {
                 bsonType: 'array',
-                items: { bsonType: mapBsonType(field.datatype) },
+                items: { bsonType: mapBsonType(field.datatype, this.typeMappings) },
             };
         }
-        return { bsonType: mapBsonType(field.datatype) };
+        return { bsonType: mapBsonType(field.datatype, this.typeMappings) };
     }
 
     private renderCreateCollection(collection: MongoCollectionDef): string {

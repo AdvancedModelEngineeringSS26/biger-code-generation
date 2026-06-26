@@ -122,6 +122,118 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Generate a file with DROP TABLE statements when generating SQL."
+                },
+                "biger.export.typeMappings": {
+                    "type": "object",
+                    "default": {},
+                    "additionalProperties": false,
+                    "markdownDescription": "Overrides bigER export datatype mappings. Exact `types` entries are matched before `typeFamilies`; omitted or invalid entries keep the built-in defaults.",
+                    "properties": {
+                        "sql": {
+                            "type": "object",
+                            "default": {},
+                            "additionalProperties": false,
+                            "markdownDescription": "SQL datatype mapping overrides keyed by export dialect.",
+                            "properties": {
+                                "generic": {
+                                    "type": "object",
+                                    "default": {},
+                                    "additionalProperties": false,
+                                    "markdownDescription": "Datatype overrides for generic SQL export.",
+                                    "properties": {
+                                        "typeFamilies": {
+                                            "type": "object",
+                                            "default": {},
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            },
+                                            "markdownDescription": "Overrides bigER SQL mapper families such as `integer`, `float`, `double`, `decimal`, `numeric`, `string`, `varchar`, `char`, `date`, `datetime`, `boolean`, `binary`, `blob`, and `clob`."
+                                        },
+                                        "types": {
+                                            "type": "object",
+                                            "default": {},
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            },
+                                            "markdownDescription": "Overrides literal ER datatype names, for example `{ \"int\": \"BIGINT\", \"double\": \"DOUBLE PRECISION\" }`."
+                                        }
+                                    }
+                                },
+                                "postgres": {
+                                    "type": "object",
+                                    "default": {},
+                                    "additionalProperties": false,
+                                    "markdownDescription": "Datatype overrides for PostgreSQL export.",
+                                    "properties": {
+                                        "typeFamilies": {
+                                            "type": "object",
+                                            "default": {},
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            },
+                                            "markdownDescription": "Overrides bigER SQL mapper families such as `integer`, `float`, `double`, `decimal`, `numeric`, `string`, `varchar`, `char`, `date`, `datetime`, `boolean`, `binary`, `blob`, and `clob`."
+                                        },
+                                        "types": {
+                                            "type": "object",
+                                            "default": {},
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            },
+                                            "markdownDescription": "Overrides literal ER datatype names, for example `{ \"int\": \"BIGINT\", \"double\": \"DOUBLE PRECISION\" }`."
+                                        }
+                                    }
+                                },
+                                "mysql": {
+                                    "type": "object",
+                                    "default": {},
+                                    "additionalProperties": false,
+                                    "markdownDescription": "Datatype overrides for MySQL export.",
+                                    "properties": {
+                                        "typeFamilies": {
+                                            "type": "object",
+                                            "default": {},
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            },
+                                            "markdownDescription": "Overrides bigER SQL mapper families such as `integer`, `float`, `double`, `decimal`, `numeric`, `string`, `varchar`, `char`, `date`, `datetime`, `boolean`, `binary`, `blob`, and `clob`."
+                                        },
+                                        "types": {
+                                            "type": "object",
+                                            "default": {},
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            },
+                                            "markdownDescription": "Overrides literal ER datatype names, for example `{ \"boolean\": \"TINYINT(1)\", \"double\": \"DOUBLE\" }`."
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "mongo": {
+                            "type": "object",
+                            "default": {},
+                            "additionalProperties": false,
+                            "markdownDescription": "MongoDB JSON schema BSON type mapping overrides.",
+                            "properties": {
+                                "typeFamilies": {
+                                    "type": "object",
+                                    "default": {},
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "markdownDescription": "Overrides bigER Mongo mapper families such as `integer`, `long`, `float`, `double`, `decimal`, `numeric`, `string`, `date`, `boolean`, and `binary`. Values should be Mongo JSON schema BSON types such as `int`, `long`, `double`, `decimal`, `string`, `date`, `bool`, or `binData`."
+                                },
+                                "types": {
+                                    "type": "object",
+                                    "default": {},
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "markdownDescription": "Overrides literal ER datatype names, for example `{ \"int\": \"long\", \"decimal\": \"decimal\" }`."
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },

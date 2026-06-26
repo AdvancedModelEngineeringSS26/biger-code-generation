@@ -15,6 +15,10 @@ pack
 
 # generated SQL outputs from examples/
 examples/*.sql
+examples/*.mongo.js
+
+# local VS Code settings used when launching examples/ as an extension host workspace
+examples/.vscode/
 
 # local working docs
 docs/local/

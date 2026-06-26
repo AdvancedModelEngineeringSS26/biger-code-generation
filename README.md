@@ -79,4 +79,369 @@ Note: Ternary Relationships do not support Aggregation or Composition, which may
 To write a one-line comment, use "//" before your text
 For multi-line comments use "/\*" to start and "\*/" to terminate
 
-Test commit by Blaz.
+## Export Type Mapping Settings
+
+bigER can generate SQL and MongoDB exports from an ER model. By default, the exporter maps ER datatypes to the selected target's built-in datatype defaults. You can override those mappings in VS Code with the `biger.export.typeMappings` setting.
+
+The setting supports two levels of override:
+
+| Override level | Setting key | Description |
+| --- | --- | --- |
+| Exact datatype | `types` | Maps the literal datatype written in the ER file, such as `int` or `double`. |
+| Type family | `typeFamilies` | Maps bigER exporter datatype families, such as `integer`, `float`, `decimal`, `string`, `date`, `boolean`, or `binary`. |
+
+Exact datatype overrides are applied before type family overrides. If no override is configured, or if an override is invalid, the exporter keeps the built-in default mapping.
+
+The examples below use this ER model:
+
+```er
+erdiagram MappingDemo
+
+entity A {
+    id: INT key
+    score: DOUBLE
+    price: DECIMAL
+    name: VARCHAR
+    active: BOOLEAN
+    photo: BLOB
+}
+```
+
+### Example 1: Default Export Behavior
+
+With no VS Code setting configured, the exporter uses its built-in mappings.
+
+VS Code setting:
+
+```json
+{}
+```
+
+PostgreSQL output:
+
+```sql
+CREATE TABLE A(
+    id INT,
+    score DOUBLE PRECISION NOT NULL,
+    price DECIMAL NOT NULL,
+    name VARCHAR NOT NULL,
+    active BOOLEAN NOT NULL,
+    photo BYTEA NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+
+MySQL output:
+
+```sql
+CREATE TABLE A(
+    id INT,
+    score DOUBLE NOT NULL,
+    price DECIMAL NOT NULL,
+    name VARCHAR NOT NULL,
+    active BOOLEAN NOT NULL,
+    photo BLOB NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+
+MongoDB output:
+
+```js
+await db.createCollection("A", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["_id", "score", "price", "name", "active", "photo"],
+      properties: {
+        _id: {
+          bsonType: "int"
+        },
+        score: {
+          bsonType: "double"
+        },
+        price: {
+          bsonType: "decimal"
+        },
+        name: {
+          bsonType: "string"
+        },
+        active: {
+          bsonType: "bool"
+        },
+        photo: {
+          bsonType: "binData"
+        }
+      }
+    }
+  },
+  validationLevel: "strict",
+  validationAction: "error"
+});
+```
+
+### Example 2: SQL Exact Datatype Overrides
+
+Use `types` to override only the literal datatypes named in the setting. This example changes PostgreSQL `INT` to `BIGINT` and `DOUBLE` to `REAL`.
+
+VS Code setting:
+
+```json
+{
+  "biger.export.typeMappings": {
+    "sql": {
+      "postgres": {
+        "types": {
+          "int": "BIGINT",
+          "double": "REAL"
+        }
+      }
+    }
+  }
+}
+```
+
+PostgreSQL output:
+
+```sql
+CREATE TABLE A(
+    id BIGINT,
+    score REAL NOT NULL,
+    price DECIMAL NOT NULL,
+    name VARCHAR NOT NULL,
+    active BOOLEAN NOT NULL,
+    photo BYTEA NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+
+### Example 3: SQL Type Family Overrides
+
+Use `typeFamilies` to override bigER exporter datatype groups. This example changes all integer-like datatypes to `BIGINT`, decimal-like datatypes to `NUMERIC(38, 8)`, string-like datatypes to `TEXT`, and boolean-like datatypes to `BOOL` for PostgreSQL export.
+
+VS Code setting:
+
+```json
+{
+  "biger.export.typeMappings": {
+    "sql": {
+      "postgres": {
+        "typeFamilies": {
+          "integer": "BIGINT",
+          "float": "DOUBLE PRECISION",
+          "decimal": "NUMERIC(38, 8)",
+          "string": "TEXT",
+          "boolean": "BOOL",
+          "binary": "BYTEA"
+        }
+      }
+    }
+  }
+}
+```
+
+PostgreSQL output:
+
+```sql
+CREATE TABLE A(
+    id BIGINT,
+    score DOUBLE PRECISION NOT NULL,
+    price NUMERIC(38, 8) NOT NULL,
+    name TEXT NOT NULL,
+    active BOOL NOT NULL,
+    photo BYTEA NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+
+### Example 4: Per-Dialect SQL Overrides
+
+SQL mappings are scoped to the selected dialect. A PostgreSQL override does not affect MySQL export, and a MySQL override does not affect PostgreSQL export.
+
+VS Code setting:
+
+```json
+{
+  "biger.export.typeMappings": {
+    "sql": {
+      "postgres": {
+        "types": {
+          "int": "BIGINT"
+        }
+      },
+      "mysql": {
+        "types": {
+          "boolean": "TINYINT(1)"
+        }
+      }
+    }
+  }
+}
+```
+
+PostgreSQL output:
+
+```sql
+CREATE TABLE A(
+    id BIGINT,
+    score DOUBLE PRECISION NOT NULL,
+    price DECIMAL NOT NULL,
+    name VARCHAR NOT NULL,
+    active BOOLEAN NOT NULL,
+    photo BYTEA NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+
+MySQL output:
+
+```sql
+CREATE TABLE A(
+    id INT,
+    score DOUBLE NOT NULL,
+    price DECIMAL NOT NULL,
+    name VARCHAR NOT NULL,
+    active TINYINT(1) NOT NULL,
+    photo BLOB NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+
+### Example 5: MongoDB BSON Overrides
+
+MongoDB export uses JSON schema `bsonType` values. MongoDB mappings also support exact datatype overrides and type family overrides. Exact `types` mappings take precedence over `typeFamilies`.
+
+VS Code setting:
+
+```json
+{
+  "biger.export.typeMappings": {
+    "mongo": {
+      "typeFamilies": {
+        "integer": "long",
+        "float": "decimal"
+      },
+      "types": {
+        "decimal": "double"
+      }
+    }
+  }
+}
+```
+
+MongoDB output:
+
+```js
+await db.createCollection("A", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["_id", "score", "price", "name", "active", "photo"],
+      properties: {
+        _id: {
+          bsonType: "long"
+        },
+        score: {
+          bsonType: "decimal"
+        },
+        price: {
+          bsonType: "double"
+        },
+        name: {
+          bsonType: "string"
+        },
+        active: {
+          bsonType: "bool"
+        },
+        photo: {
+          bsonType: "binData"
+        }
+      }
+    }
+  },
+  validationLevel: "strict",
+  validationAction: "error"
+});
+```
+
+### Example 6: Invalid Override Fallback
+
+Invalid mapping values are ignored. The exporter should still run and should fall back to the built-in mapping for invalid or empty entries.
+
+VS Code setting:
+
+```json
+{
+  "biger.export.typeMappings": {
+    "sql": {
+      "postgres": {
+        "types": {
+          "int": 42,
+          "double": "   "
+        },
+        "typeFamilies": {
+          "decimal": [],
+          "string": ""
+        }
+      }
+    },
+    "mongo": {
+      "types": {
+        "int": "not-a-bson-type"
+      },
+      "typeFamilies": {
+        "float": "not-a-bson-type"
+      }
+    }
+  }
+}
+```
+
+PostgreSQL output:
+
+```sql
+CREATE TABLE A(
+    id INT,
+    score DOUBLE PRECISION NOT NULL,
+    price DECIMAL NOT NULL,
+    name VARCHAR NOT NULL,
+    active BOOLEAN NOT NULL,
+    photo BYTEA NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+
+MongoDB output:
+
+```js
+await db.createCollection("A", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["_id", "score", "price", "name", "active", "photo"],
+      properties: {
+        _id: {
+          bsonType: "int"
+        },
+        score: {
+          bsonType: "double"
+        },
+        price: {
+          bsonType: "decimal"
+        },
+        name: {
+          bsonType: "string"
+        },
+        active: {
+          bsonType: "bool"
+        },
+        photo: {
+          bsonType: "binData"
+        }
+      }
+    }
+  },
+  validationLevel: "strict",
+  validationAction: "error"
+});
+```

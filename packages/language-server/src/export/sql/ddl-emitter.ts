@@ -1,4 +1,4 @@
-import type { SqlExportOptions } from '@biger/common';
+import type { DataTypeMappingConfiguration, SqlExportOptions } from '@biger/common';
 import type { Attribute, DataType, Entity, Model, Relationship } from '../../generated/ast.js';
 import { findWeakOwner, isAtMostOne } from '../../model/model-queries.js';
 import type { Dialect } from './dialects.js';
@@ -25,7 +25,10 @@ interface ParentKeyBlock {
 }
 
 export class DdlEmitter {
-    constructor(private readonly dialect: Dialect) {}
+    constructor(
+        private readonly dialect: Dialect,
+        private readonly typeMappings?: DataTypeMappingConfiguration,
+    ) {}
 
     emit(model: Model, opts?: SqlExportOptions): string {
         const tables: { name: string; sql: string }[] = [];
@@ -230,7 +233,7 @@ export class DdlEmitter {
 
     private renderDatatype(dt: DataType | undefined): string {
         if (!dt) return '';
-        const mapped = this.dialect.mapDataType(dt.type);
+        const mapped = this.dialect.mapDataType(dt.type, this.typeMappings);
         if (dt.size && dt.d) return `${mapped}(${dt.size}, ${dt.d})`;
         if (dt.size) return `${mapped}(${dt.size})`;
         return mapped;

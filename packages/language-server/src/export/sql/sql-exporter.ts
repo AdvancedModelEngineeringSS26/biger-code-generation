@@ -1,4 +1,4 @@
-import type { ExportModelParams, SqlExportOptions, SqlGenerationDialect } from '@biger/common';
+import { sanitizeExportConfiguration, type ExportModelParams, type SqlExportOptions, type SqlGenerationDialect } from '@biger/common';
 import { URI } from 'langium';
 import type { EntityRelationshipServices } from '../../entity-relationship-module.js';
 import type { Model } from '../../generated/ast.js';
@@ -21,7 +21,9 @@ export class SqlExporter implements Exporter {
         }
 
         const model = await this.parseToModel(params.erContent, params.sourceUri);
-        return new DdlEmitter(dialect).emit(model, opts);
+        const exportConfig = sanitizeExportConfiguration(opts?.exportConfig);
+        const typeMappings = exportConfig?.typeMappings?.sql?.[dialectName];
+        return new DdlEmitter(dialect, typeMappings).emit(model, opts);
     }
 
     private async parseToModel(erContent: string, sourceUri: string): Promise<Model> {
