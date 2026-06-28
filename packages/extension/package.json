@@ -11,7 +11,7 @@
         "build": "node esbuild.mjs",
         "watch": "node esbuild.mjs --watch",
         "vscode:prepublish": "yarn run build",
-        "package": "vsce package --no-dependencies --allow-missing-repository",
+        "package": "npx --yes @vscode/vsce@latest package --no-dependencies --allow-missing-repository",
         "install-extension": "code --install-extension biger-0.1.0.vsix --force",
         "export:cli": "node ./pack/extension/src/export-cli.cjs",
         "test": "vitest run",
