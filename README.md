@@ -56,12 +56,12 @@ entity Customer {
 
 <ol>
 <li> Ensure you have two or more entities </li>
-<li> Declare a new relationship using the "rel" keyword followed by a name for the relationship </li>
+<li> Declare a new relationship using the "relationship" keyword followed by a name for the relationship </li>
 <li> Define the content of the relationship inside curly brackets. At a minimum, the involved entities, tpye and cardinality must be defined.
 <ol>
 <li> The involved entities are defined by referencing two existing entities </li>
 <li> The relationship type is defined by connecting the entities with a relation symbol. This symbol can be either "->" for a binary relationship, "-o"/"o-" for an aggregation on the side of the "o" or "-*"/"*-" for a composition on the side of the "*" </li>
-<li> The cardinality is defined in square brackets immediately following each entity. The allowed quantities for cardinality are "0", "1" and "N", connected by two dots. </li>
+<li> The cardinality is defined in square brackets immediately following each entity. The supported cardinalities are [1], [0..1], [0..N] and [N] (the quantities "0", "1" and "N" connected by two dots). </li>
 </ol>
 </li>
 </ol>
@@ -69,7 +69,7 @@ entity Customer {
 Optionally, the following features are available:
 - Roles: for each entity, the role it takes in the relationship can be defined inside the curly brackets by inserting a vertical line followed by a string after the quantity
 - Attributes: after the required content, any number of attributes may be defined. See the tutorial on attributes for further details
-Weak relationships: weak relationships between an entity and a weak entity can be defined as such using the "weak" keyword before declaring the relationship
+- Weak relationships: weak relationships between an entity and a weak entity can be defined as such using the "weak" keyword before declaring the relationship
 - Ternary relationships: a relationship involving three entities can be defined by extending a binary relationship with an additional relationship type followed by an additional entity.
 
 Note: Ternary Relationships do not support Aggregation or Composition, which may lead to unexpected behaviour. For cases where this is needed, use a series of binary relationships instead.

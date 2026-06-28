@@ -3,17 +3,16 @@
     "displayName": "bigER",
     "description": "ER modeling tool for VS Code",
     "version": "0.1.0",
+    "publisher": "biger-local",
     "license": "MIT",
-    "files": [
-        "server",
-        "syntaxes",
-        "webview"
-    ],
     "scripts": {
         "prepare": "yarn run clean && yarn run build",
         "clean": "rimraf pack",
         "build": "node esbuild.mjs",
         "watch": "node esbuild.mjs --watch",
+        "vscode:prepublish": "yarn run build",
+        "package": "vsce package --no-dependencies --allow-missing-repository",
+        "install-extension": "code --install-extension biger-0.1.0.vsix --force",
         "export:cli": "node ./pack/extension/src/export-cli.cjs",
         "test": "vitest run",
         "test:watch": "vitest"
@@ -89,11 +88,6 @@
                 "category": "ER Diagram"
             },
             {
-                "command": "biger.generate.sql.generic",
-                "title": "Generate SQL",
-                "category": "bigER"
-            },
-            {
                 "command": "biger.generate.postgres",
                 "title": "Generate PostgreSQL",
                 "category": "bigER"
@@ -123,6 +117,17 @@
                     "default": false,
                     "description": "Generate a file with DROP TABLE statements when generating SQL."
                 },
+                "biger.export.inheritanceStrategy": {
+                    "type": "string",
+                    "enum": ["joined", "tablePerClass", "singleTable"],
+                    "default": "joined",
+                    "enumDescriptions": [
+                        "A table for each entity; every subclass shares the parent's primary key and references it with a foreign key (JPA JOINED).",
+                        "A table only for concrete leaf subclasses, with all inherited columns flattened in and no parent table (JPA TABLE_PER_CLASS).",
+                        "One table for the whole hierarchy; subclass-specific columns are nullable (JPA SINGLE_TABLE)."
+                    ],
+                    "markdownDescription": "How entity inheritance (`extends`) maps to SQL tables. `joined` = a table for each entity linked by foreign keys (default); `tablePerClass` = a table only for leaf subclasses with inherited columns flattened in; `singleTable` = one table for the whole hierarchy with nullable subclass columns."
+                },
                 "biger.export.typeMappings": {
                     "type": "object",
                     "default": {},
@@ -135,30 +140,6 @@
                             "additionalProperties": false,
                             "markdownDescription": "SQL datatype mapping overrides keyed by export dialect.",
                             "properties": {
-                                "generic": {
-                                    "type": "object",
-                                    "default": {},
-                                    "additionalProperties": false,
-                                    "markdownDescription": "Datatype overrides for generic SQL export.",
-                                    "properties": {
-                                        "typeFamilies": {
-                                            "type": "object",
-                                            "default": {},
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            },
-                                            "markdownDescription": "Overrides bigER SQL mapper families such as `integer`, `float`, `double`, `decimal`, `numeric`, `string`, `varchar`, `char`, `date`, `datetime`, `boolean`, `binary`, `blob`, and `clob`."
-                                        },
-                                        "types": {
-                                            "type": "object",
-                                            "default": {},
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            },
-                                            "markdownDescription": "Overrides literal ER datatype names, for example `{ \"int\": \"BIGINT\", \"double\": \"DOUBLE PRECISION\" }`."
-                                        }
-                                    }
-                                },
                                 "postgres": {
                                     "type": "object",
                                     "default": {},
@@ -260,10 +241,6 @@
                     "when": "er-diagram-focused"
                 },
                 {
-                    "command": "biger.generate.sql.generic",
-                    "when": "editorLangId == 'entity-relationship'"
-                },
-                {
                     "command": "biger.generate.postgres",
                     "when": "editorLangId == 'entity-relationship'"
                 },
@@ -297,20 +274,16 @@
             ],
             "biger.generate": [
                 {
-                    "command": "biger.generate.sql.generic",
+                    "command": "biger.generate.postgres",
                     "group": "1_generate@1"
                 },
                 {
-                    "command": "biger.generate.postgres",
+                    "command": "biger.generate.mysql",
                     "group": "1_generate@2"
                 },
                 {
-                    "command": "biger.generate.mysql",
-                    "group": "1_generate@3"
-                },
-                {
                     "command": "biger.generate.mongo",
-                    "group": "1_generate@4"
+                    "group": "1_generate@3"
                 }
             ],
             "explorer/context": [

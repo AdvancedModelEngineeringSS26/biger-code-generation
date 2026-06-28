@@ -11,6 +11,9 @@ package-lock.json
 out
 pack
 
+# packaged extension artifact
+*.vsix
+
 # generated SQL outputs from examples/
 examples/*.sql
 examples/*.mongo.js

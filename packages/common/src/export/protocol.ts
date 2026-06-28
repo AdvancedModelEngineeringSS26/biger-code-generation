@@ -7,8 +7,16 @@ export type ExportTarget = 'sql' | 'mongo' | (string & {});
 // `<fixture>.<dialect>.sql` (enforced by sql-exporter.test.ts coverage check).
 export const SQL_DIALECTS = ['postgres', 'mysql'] as const;
 export type SqlDialect = (typeof SQL_DIALECTS)[number];
-export const SQL_GENERATION_DIALECTS = ['generic', ...SQL_DIALECTS] as const;
-export type SqlGenerationDialect = (typeof SQL_GENERATION_DIALECTS)[number];
+
+// How entity inheritance (`extends`) maps to SQL tables:
+//   joined        — a table per entity; each subclass shares the parent PK and
+//                   references it with a foreign key (JPA JOINED). Default.
+//   tablePerClass — a table per concrete leaf subclass with all inherited
+//                   columns flattened in; no parent table (JPA TABLE_PER_CLASS).
+//   singleTable   — one table for the whole hierarchy; subclass columns nullable
+//                   (JPA SINGLE_TABLE).
+export const SQL_INHERITANCE_STRATEGIES = ['joined', 'tablePerClass', 'singleTable'] as const;
+export type SqlInheritanceStrategy = (typeof SQL_INHERITANCE_STRATEGIES)[number];
 
 export const EXPORT_TYPE_FAMILIES = [
     'integer',
@@ -37,7 +45,7 @@ export interface DataTypeMappingConfiguration {
     types?: Record<string, string | undefined>;
 }
 
-export type SqlDataTypeMappingConfiguration = Partial<Record<SqlGenerationDialect, DataTypeMappingConfiguration>>;
+export type SqlDataTypeMappingConfiguration = Partial<Record<SqlDialect, DataTypeMappingConfiguration>>;
 
 export interface ExportTypeMappingConfiguration {
     sql?: SqlDataTypeMappingConfiguration;
@@ -49,8 +57,9 @@ export interface ExportConfiguration {
 }
 
 export interface SqlExportOptions {
-    dialect?: SqlGenerationDialect;
+    dialect?: SqlDialect;
     generateDrop?: boolean;
+    inheritanceStrategy?: SqlInheritanceStrategy;
     exportConfig?: ExportConfiguration;
 }
 
@@ -98,7 +107,7 @@ function sanitizeSqlMappings(value: unknown): SqlDataTypeMappingConfiguration | 
     if (!isRecord(value)) return undefined;
 
     const sql: SqlDataTypeMappingConfiguration = {};
-    for (const dialect of SQL_GENERATION_DIALECTS) {
+    for (const dialect of SQL_DIALECTS) {
         const mapping = sanitizeDataTypeMapping(value[dialect]);
         if (mapping) sql[dialect] = mapping;
     }

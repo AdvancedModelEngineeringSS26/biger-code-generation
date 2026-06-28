@@ -1,6 +1,6 @@
-import type { DataTypeMappingConfiguration, SqlExportOptions } from '@biger/common';
+import type { DataTypeMappingConfiguration, SqlExportOptions, SqlInheritanceStrategy } from '@biger/common';
 import type { Attribute, DataType, Entity, Model, Relationship } from '../../generated/ast.js';
-import { findWeakOwner, isAtMostOne } from '../../model/model-queries.js';
+import { ancestorsOf, descendantsOf, findWeakOwner, hasChildren, isAtMostOne, rootOf } from '../../model/model-queries.js';
 import type { Dialect } from './dialects.js';
 
 interface TableDef {
@@ -25,22 +25,29 @@ interface ParentKeyBlock {
 }
 
 export class DdlEmitter {
+    private model!: Model;
+
     constructor(
         private readonly dialect: Dialect,
         private readonly typeMappings?: DataTypeMappingConfiguration,
+        private readonly inheritanceStrategy: SqlInheritanceStrategy = 'joined',
     ) {}
 
     emit(model: Model, opts?: SqlExportOptions): string {
+        this.model = model;
         const tables: { name: string; sql: string }[] = [];
 
         for (const entity of model.entities) {
-            tables.push({ name: entity.name, sql: this.emitEntity(entity, model) });
-            for (const attr of entity.attributes) {
-                if (attr.type?.MULTIVALUED) {
-                    tables.push({
-                        name: `${entity.name}_${attr.name}`,
-                        sql: this.emitMultivaluedTable(entity, attr),
-                    });
+            const sql = this.emitEntityTable(entity);
+            if (sql !== null) tables.push({ name: entity.name, sql });
+            if (this.emitsOwnTable(entity)) {
+                for (const attr of entity.attributes) {
+                    if (attr.type?.MULTIVALUED) {
+                        tables.push({
+                            name: `${entity.name}_${attr.name}`,
+                            sql: this.emitMultivaluedTable(entity, attr),
+                        });
+                    }
                 }
             }
         }
@@ -51,17 +58,84 @@ export class DdlEmitter {
 
         let head = '';
         if (opts?.generateDrop) {
-            const dropLines = [...tables].reverse().map((t) => `DROP TABLE IF EXISTS ${t.name};`);
+            const dropLines = [...tables].reverse().map((t) => `DROP TABLE IF EXISTS ${this.quote(t.name)};`);
             head = dropLines.join('\n') + '\n';
         }
         return head + tables.map((t) => t.sql).join('');
     }
 
-    private emitEntity(entity: Entity, model: Model): string {
-        if (entity.weak) return this.emitWeakEntity(entity, model);
-        const parent = entity.extends?.ref;
-        if (parent) return this.emitInheritedEntity(entity, parent);
-        return this.emitPlainEntity(entity);
+    private emitEntityTable(entity: Entity): string | null {
+        if (!this.emitsOwnTable(entity)) return null;
+        if (entity.weak) return this.emitWeakEntity(entity, this.model);
+
+        switch (this.inheritanceStrategy) {
+            case 'singleTable':
+                return hasChildren(entity, this.model)
+                    ? this.emitSingleTable(entity)
+                    : this.emitPlainEntity(entity);
+            case 'tablePerClass':
+                return this.emitFlattenedTable(entity);
+            default: {
+                const parent = entity.extends?.ref;
+                return parent ? this.emitInheritedEntity(entity, parent) : this.emitPlainEntity(entity);
+            }
+        }
+    }
+
+    /** Whether `entity` produces its own CREATE TABLE under the active strategy. */
+    private emitsOwnTable(entity: Entity): boolean {
+        if (entity.weak) return true;
+        switch (this.inheritanceStrategy) {
+            case 'singleTable':
+                // Subclasses collapse into their root's single table.
+                return !entity.extends?.ref;
+            case 'tablePerClass':
+                // Only concrete leaves get a table; ancestors are treated as abstract.
+                return !hasChildren(entity, this.model);
+            default:
+                return true;
+        }
+    }
+
+    /** SINGLE_TABLE: one table for the whole hierarchy rooted at `root`. */
+    private emitSingleTable(root: Entity): string {
+        const keyNames = new Set(this.keyAttrs(root).map((k) => k.name));
+        const columns: string[] = [];
+        const seen = new Set<string>();
+        for (const a of this.emittableAttrs(root)) {
+            columns.push(this.renderAttribute(a, keyNames.has(a.name)));
+            seen.add(a.name);
+        }
+        // Subclass-specific columns are nullable — a row only fills the columns for its own type.
+        for (const sub of descendantsOf(root, this.model)) {
+            for (const a of this.emittableAttrs(sub)) {
+                if (seen.has(a.name)) continue;
+                seen.add(a.name);
+                columns.push(this.renderAttribute(a, false, true));
+            }
+        }
+        return this.renderTable({ name: root.name, columns, pk: [...keyNames] });
+    }
+
+    /** TABLE_PER_CLASS: a self-contained table for a concrete leaf, inherited columns flattened in. */
+    private emitFlattenedTable(entity: Entity): string {
+        const chain = [...ancestorsOf(entity).reverse(), entity]; // root … entity
+        const keyNames = new Set(this.collectKeys(entity).map((k) => k.name));
+        const columns: string[] = [];
+        const seen = new Set<string>();
+        for (const e of chain) {
+            for (const a of this.emittableAttrs(e)) {
+                if (seen.has(a.name)) continue;
+                seen.add(a.name);
+                columns.push(this.renderAttribute(a, keyNames.has(a.name)));
+            }
+        }
+        return this.renderTable({ name: entity.name, columns, pk: [...keyNames] });
+    }
+
+    /** The table an FK should target for `entity` under the active strategy. */
+    private refTableName(entity: Entity): string {
+        return this.inheritanceStrategy === 'singleTable' ? rootOf(entity).name : entity.name;
     }
 
     private emitPlainEntity(entity: Entity): string {
@@ -136,21 +210,25 @@ export class DdlEmitter {
         const fk: string[] = [];
         const unique: string[] = [];
 
-        for (const p of participants) {
+        for (const [index, p] of participants.entries()) {
             const participantFkCols: string[] = [];
+            // When the same entity participates more than once (e.g. a self-reference),
+            // disambiguate column names by the participant role, or — if no role was
+            // given — by a positional suffix so the columns/PK/FKs never collide.
+            const prefix = hasDuplicates ? (p.role ?? `${p.entity.name}${index + 1}`) : undefined;
             for (const keyAttr of this.collectKeys(p.entity)) {
-                const colName = hasDuplicates && p.role ? `${p.role}_${keyAttr.name}` : keyAttr.name;
-                pkColumns.push(`${colName} ${this.renderDatatype(keyAttr.datatype)}`);
+                const colName = prefix ? `${prefix}_${keyAttr.name}` : keyAttr.name;
+                pkColumns.push(`${this.quote(colName)} ${this.renderDatatype(keyAttr.datatype)}`);
                 pkColumnNames.push(colName);
                 participantFkCols.push(colName);
 
                 const cascade = p.isWhole ? ' ON DELETE CASCADE' : '';
                 fk.push(
-                    `FOREIGN KEY (${colName}) REFERENCES ${p.entity.name}(${keyAttr.name})${cascade}`,
+                    `FOREIGN KEY (${this.quote(colName)}) REFERENCES ${this.quote(this.refTableName(p.entity))}(${this.quote(keyAttr.name)})${cascade}`,
                 );
             }
             if (p.atMostOne && participantFkCols.length > 0) {
-                unique.push(`UNIQUE (${participantFkCols.join(', ')})`);
+                unique.push(`UNIQUE (${participantFkCols.map((c) => this.quote(c)).join(', ')})`);
             }
         }
 
@@ -204,16 +282,16 @@ export class DdlEmitter {
         const columns = keys.map((k) => this.renderAttribute(k, true));
         const pkNames = keys.map((k) => k.name);
         if (pkNames.length === 0) return { columns, pkNames, fkClause: null };
-        const fkCols = pkNames.join(', ');
+        const fkCols = pkNames.map((n) => this.quote(n)).join(', ');
         const suffix = cascade ? ' ON DELETE CASCADE' : '';
-        const fkClause = `FOREIGN KEY (${fkCols}) REFERENCES ${parent.name}(${fkCols})${suffix}`;
+        const fkClause = `FOREIGN KEY (${fkCols}) REFERENCES ${this.quote(this.refTableName(parent))}(${fkCols})${suffix}`;
         return { columns, pkNames, fkClause };
     }
 
     private renderTable(def: TableDef): string {
         const body = def.columns.map((c) => `    ${c}`);
         if (def.pk.length > 0) {
-            body.push(`    PRIMARY KEY (${def.pk.join(', ')})`);
+            body.push(`    PRIMARY KEY (${def.pk.map((n) => this.quote(n)).join(', ')})`);
         }
         for (const u of def.unique ?? []) {
             body.push(`    ${u}`);
@@ -221,14 +299,19 @@ export class DdlEmitter {
         for (const fk of def.fk ?? []) {
             body.push(`    ${fk}`);
         }
-        return `CREATE TABLE ${def.name}(\n${body.join(',\n')}\n);\n`;
+        return `CREATE TABLE ${this.quote(def.name)}(\n${body.join(',\n')}\n);\n`;
     }
 
-    private renderAttribute(attr: Attribute, inPrimaryKey: boolean): string {
+    private renderAttribute(attr: Attribute, inPrimaryKey: boolean, forceNullable = false): string {
         const typeStr = this.renderDatatype(attr.datatype);
-        if (inPrimaryKey) return `${attr.name} ${typeStr}`;
-        const nullSuffix = attr.type?.OPTIONAL ? '' : ' NOT NULL';
-        return `${attr.name} ${typeStr}${nullSuffix}`;
+        const name = this.quote(attr.name);
+        if (inPrimaryKey) return `${name} ${typeStr}`;
+        const nullSuffix = attr.type?.OPTIONAL || forceNullable ? '' : ' NOT NULL';
+        return `${name} ${typeStr}${nullSuffix}`;
+    }
+
+    private quote(name: string): string {
+        return this.dialect.quoteIdentifier(name);
     }
 
     private renderDatatype(dt: DataType | undefined): string {

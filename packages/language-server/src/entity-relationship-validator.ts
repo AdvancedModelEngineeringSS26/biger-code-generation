@@ -64,7 +64,7 @@ export class EntityRelationshipValidator {
         let relationshipNames = relationships.map(entity => entity.name);
         relationships.forEach(relationship => {
             if (relationshipNames.filter(n => n === relationship.name).length > 1) {
-                accept('error', `Multiple entities named \"${relationship.name}\".`, { node: relationship, property: 'name' });
+                accept('error', `Multiple relationships named \"${relationship.name}\".`, { node: relationship, property: 'name' });
             }
         })
     }

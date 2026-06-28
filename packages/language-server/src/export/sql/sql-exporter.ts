@@ -1,4 +1,4 @@
-import { sanitizeExportConfiguration, type ExportModelParams, type SqlExportOptions, type SqlGenerationDialect } from '@biger/common';
+import { sanitizeExportConfiguration, type ExportModelParams, type SqlExportOptions, type SqlDialect } from '@biger/common';
 import { URI } from 'langium';
 import type { EntityRelationshipServices } from '../../entity-relationship-module.js';
 import type { Model } from '../../generated/ast.js';
@@ -14,7 +14,7 @@ export class SqlExporter implements Exporter {
 
     async exportModel(params: ExportModelParams): Promise<string> {
         const opts = params.targetOptions as SqlExportOptions | undefined;
-        const dialectName: SqlGenerationDialect = opts?.dialect ?? 'generic';
+        const dialectName: SqlDialect = opts?.dialect ?? 'postgres';
         const dialect = DIALECTS[dialectName];
         if (!dialect) {
             throw new Error(`Unknown SQL dialect: ${dialectName}`);
@@ -23,7 +23,8 @@ export class SqlExporter implements Exporter {
         const model = await this.parseToModel(params.erContent, params.sourceUri);
         const exportConfig = sanitizeExportConfiguration(opts?.exportConfig);
         const typeMappings = exportConfig?.typeMappings?.sql?.[dialectName];
-        return new DdlEmitter(dialect, typeMappings).emit(model, opts);
+        const inheritanceStrategy = opts?.inheritanceStrategy ?? 'joined';
+        return new DdlEmitter(dialect, typeMappings, inheritanceStrategy).emit(model, opts);
     }
 
     private async parseToModel(erContent: string, sourceUri: string): Promise<Model> {

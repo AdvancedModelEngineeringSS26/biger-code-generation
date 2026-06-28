@@ -1,8 +1,14 @@
-import type { DataTypeMappingConfiguration, SqlGenerationDialect } from '@biger/common';
+import type { DataTypeMappingConfiguration, SqlDialect } from '@biger/common';
+import { isReservedKeyword } from '../reserved-keywords.js';
 
 export interface Dialect {
-    readonly name: SqlGenerationDialect;
+    readonly name: SqlDialect;
     mapDataType(type: string, overrides?: DataTypeMappingConfiguration): string;
+    /**
+     * Quote an identifier when it is a reserved keyword for this dialect or is
+     * not a plain identifier; otherwise return it unchanged.
+     */
+    quoteIdentifier(name: string): string;
 }
 
 // Aggregate type sets — union across all 5 bigER dialects (postgres, mysql, mssql, oracle, db2).
@@ -127,7 +133,7 @@ const POSTGRES_ALL_TYPES = new Set<string>([
 
 const MYSQL_INTEGER_TYPES = ['BIGINT', 'INT', 'MEDIUMINT', 'SMALLINT', 'TINYINT'];
 const MYSQL_FLOAT_TYPES = ['DOUBLE', 'FLOAT'];
-const MYSQL_DECIMAL_TYPES = ['NUMBER', 'DECIMAL'];
+const MYSQL_DECIMAL_TYPES = ['DECIMAL', 'NUMERIC'];
 const MYSQL_VARCHAR_TYPES = ['VARCHAR'];
 const MYSQL_CHAR_TYPES = ['CHAR'];
 const MYSQL_DATE_TYPES = ['DATE'];
@@ -199,8 +205,23 @@ function makeMapper(ownAllTypes: Set<string>, firsts: DialectFirsts): Dialect['m
     };
 }
 
+const SAFE_IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+// Quote an identifier only when necessary: when it is a reserved keyword for the
+// dialect, or is not a plain [A-Za-z_][A-Za-z0-9_]* identifier. Embedded quote
+// characters are escaped by doubling (standard for both "..." and `...`).
+function makeIdentifierQuoter(quoteChar: string, reservedLabel: string): (name: string) => string {
+    return (name) => {
+        if (SAFE_IDENTIFIER.test(name) && !isReservedKeyword(name, reservedLabel)) {
+            return name;
+        }
+        return quoteChar + name.split(quoteChar).join(quoteChar + quoteChar) + quoteChar;
+    };
+}
+
 export const postgresDialect: Dialect = {
     name: 'postgres',
+    quoteIdentifier: makeIdentifierQuoter('"', 'PostgreSQL'),
     mapDataType: makeMapper(POSTGRES_ALL_TYPES, {
         INTEGER: POSTGRES_INTEGER_TYPES[0],
         FLOAT: POSTGRES_FLOAT_TYPES[0],
@@ -221,6 +242,7 @@ export const postgresDialect: Dialect = {
 
 export const mysqlDialect: Dialect = {
     name: 'mysql',
+    quoteIdentifier: makeIdentifierQuoter('`', 'MySQL'),
     mapDataType: makeMapper(MYSQL_ALL_TYPES, {
         INTEGER: MYSQL_INTEGER_TYPES[0],
         FLOAT: MYSQL_FLOAT_TYPES[0],
@@ -239,16 +261,7 @@ export const mysqlDialect: Dialect = {
     }),
 };
 
-export const genericDialect: Dialect = {
-    name: 'generic',
-    mapDataType: (type, overrides) => {
-        const upper = type.toUpperCase();
-        return mapSqlDataTypeOverride(type, upper, overrides) ?? type;
-    },
-};
-
-export const DIALECTS: Record<SqlGenerationDialect, Dialect> = {
-    generic: genericDialect,
+export const DIALECTS: Record<SqlDialect, Dialect> = {
     postgres: postgresDialect,
     mysql: mysqlDialect,
 };

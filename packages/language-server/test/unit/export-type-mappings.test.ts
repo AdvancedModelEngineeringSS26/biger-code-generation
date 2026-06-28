@@ -1,4 +1,4 @@
-import type { SqlGenerationDialect } from '@biger/common';
+import type { SqlDialect } from '@biger/common';
 import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -172,7 +172,7 @@ describe('export datatype mapping configuration', () => {
     });
 });
 
-async function exportSql(dialect: SqlGenerationDialect, exportConfig?: unknown): Promise<string> {
+async function exportSql(dialect: SqlDialect, exportConfig?: unknown): Promise<string> {
     const result = await exportService.exportModel({
         sourceUri: pathToFileURL(path.join(fixturesDir, `type-mapping-${dialect}.er`)).toString(),
         erContent: TYPE_MAPPING_ER,

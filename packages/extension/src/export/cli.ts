@@ -11,6 +11,7 @@ import { createDefaultExportService } from '../../../language-server/src/export/
 interface SqlExportCommandOptions {
     destination?: string;
     dialect: string;
+    inheritance?: string;
 }
 
 interface MongoExportCommandOptions {
@@ -34,6 +35,7 @@ export async function runExportCli(argv: string[]): Promise<void> {
         )
         .option('-d, --destination <path>', 'Destination directory or target SQL file path')
         .option('--dialect <dialect>', 'SQL dialect (postgres, mysql)', 'postgres')
+        .option('--inheritance <strategy>', 'Inheritance mapping (joined, tablePerClass, singleTable)', 'joined')
         .action(async (file: string, options: SqlExportCommandOptions) => {
             await exportSql(file, options);
         });
@@ -56,7 +58,8 @@ async function exportSql(file: string, options: SqlExportCommandOptions): Promis
     await exportFile(file, options.destination, {
         target: 'sql',
         targetOptions: {
-            dialect: options.dialect
+            dialect: options.dialect,
+            inheritanceStrategy: options.inheritance
         }
     });
 }

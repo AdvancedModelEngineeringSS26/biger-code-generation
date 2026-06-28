@@ -5,7 +5,7 @@ import {
     type ExportTarget,
     type MongoExportOptions,
     type SqlExportOptions,
-    type SqlGenerationDialect
+    type SqlDialect
 } from '@biger/common';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
@@ -15,11 +15,10 @@ import { getGenerationConfig } from './config';
 interface ExportCommand {
     readonly id: string;
     readonly target: ExportTarget;
-    readonly dialect?: SqlGenerationDialect;
+    readonly dialect?: SqlDialect;
 }
 
 const EXPORT_COMMANDS: readonly ExportCommand[] = [
-    { id: 'biger.generate.sql.generic', target: 'sql', dialect: 'generic' },
     { id: 'biger.generate.postgres', target: 'sql', dialect: 'postgres' },
     { id: 'biger.generate.mysql', target: 'sql', dialect: 'mysql' },
     { id: 'biger.generate.mongo', target: 'mongo' }
@@ -68,7 +67,8 @@ async function exportDocument(
         const targetOptions: SqlExportOptions | MongoExportOptions = command.target === 'sql'
             ? {
                 dialect: command.dialect,
-                generateDrop: generationConfig.generateDrop
+                generateDrop: generationConfig.generateDrop,
+                inheritanceStrategy: generationConfig.inheritanceStrategy
             }
             : {
                 generateDrop: generationConfig.generateDrop

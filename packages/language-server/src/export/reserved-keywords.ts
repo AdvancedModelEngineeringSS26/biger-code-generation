@@ -100,6 +100,18 @@ const RESERVED_KEYWORD_DIALECTS: readonly ReservedKeywordDialect[] = [
     { label: 'MongoDB', keywords: toKeywordSet(MONGO_RESERVED_KEYWORDS) },
 ];
 
+/**
+ * True when `identifier` is a reserved keyword for the given dialect label
+ * ('PostgreSQL' or 'MySQL'). Used by the SQL emitter to decide whether an
+ * identifier must be quoted. Case-insensitive.
+ */
+export function isReservedKeyword(identifier: string, dialectLabel: string): boolean {
+    const normalized = normalizeIdentifier(identifier);
+    if (!normalized) return false;
+    const dialect = RESERVED_KEYWORD_DIALECTS.find((d) => d.label === dialectLabel);
+    return dialect ? dialect.keywords.has(normalized) : false;
+}
+
 export function getReservedKeywordWarning(identifier: string | undefined): string | undefined {
     if (!identifier) return undefined;
 

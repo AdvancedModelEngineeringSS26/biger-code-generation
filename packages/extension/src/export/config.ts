@@ -1,13 +1,15 @@
-import { sanitizeExportConfiguration, type ExportConfiguration } from '@biger/common';
+import { sanitizeExportConfiguration, type ExportConfiguration, type SqlInheritanceStrategy } from '@biger/common';
 import * as vscode from 'vscode';
 
 const GENERATION_CONFIGURATION_SECTION = 'biger';
 const LEGACY_GENERATION_CONFIGURATION_SECTION = 'erdiagram';
 const GENERATE_DROP_CONFIGURATION_KEY = 'generateDrop';
 const TYPE_MAPPINGS_CONFIGURATION_KEY = 'export.typeMappings';
+const INHERITANCE_STRATEGY_CONFIGURATION_KEY = 'export.inheritanceStrategy';
 
 export interface GenerationConfiguration {
     generateDrop: boolean;
+    inheritanceStrategy: SqlInheritanceStrategy;
     exportConfig?: ExportConfiguration;
 }
 
@@ -18,8 +20,16 @@ export function getGenerationConfig(): GenerationConfiguration {
 
     return {
         generateDrop: getGenerateDropConfig(),
+        inheritanceStrategy: getInheritanceStrategyConfig(),
         ...(exportConfig ? { exportConfig } : {}),
     };
+}
+
+function getInheritanceStrategyConfig(): SqlInheritanceStrategy {
+    const value = vscode.workspace
+        .getConfiguration(GENERATION_CONFIGURATION_SECTION)
+        .get<string>(INHERITANCE_STRATEGY_CONFIGURATION_KEY);
+    return value === 'tablePerClass' || value === 'singleTable' ? value : 'joined';
 }
 
 function getGenerateDropConfig(): boolean {
